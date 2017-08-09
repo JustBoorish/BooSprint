@@ -84,7 +84,7 @@ class com.boosprint.Controller extends MovieClip
 			DebugWindow.Log("BooSprint OnModuleActivated: connect " + m_characterName);
 			m_settings = Settings.Load(m_settingsPrefix, m_defaults);
 			
-			m_icon = new BIcon(m_mc, _root["boosprint\\boosprint"].BooSprintIcon, VERSION, Delegate.create(this, ToggleSprintSelectorVisible), Delegate.create(this, ToggleConfigVisible), Delegate.create(this, ToggleSprintEnabled), Delegate.create(this, ToggleDebugVisible), m_settings[BIcon.ICON_X], m_settings[BIcon.ICON_Y], Delegate.create(this, IsSprintEnabled));
+			m_icon = new BIcon(m_mc, _root["boosprint\\boosprint"].BooSprintIcon, VERSION, Delegate.create(this, ToggleSprintSelectorVisible), Delegate.create(this, ToggleConfigVisible), Delegate.create(this, ToggleSprintEnabled), Delegate.create(this, ToggleDebugVisible), m_settings[BIcon.ICON_X], m_settings[BIcon.ICON_Y], Delegate.create(this, IsSprintEnabled), Delegate.create(this, GetCurrentSprintName));
 		}
 		
 		StartAutoSprint();		
@@ -350,6 +350,11 @@ class com.boosprint.Controller extends MovieClip
 	{
 		Settings.SetSprintEnabled(m_settings, !Settings.GetSprintEnabled(m_settings));
 		StartAutoSprint();
+	}
+	
+	private function GetCurrentSprintName():String
+	{
+		return SprintSelector.GetSprintFromTag(Settings.GetSprintTag(m_settings));
 	}
 	
 	private function OverwriteSprintKey(enabled:Boolean):Void

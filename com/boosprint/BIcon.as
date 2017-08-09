@@ -37,6 +37,7 @@ class com.boosprint.BIcon
 	private var m_toggleShiftLeftVisibleFunc:Function;
 	private var m_ctrlToggleVisibleFunc:Function;
 	private var m_isEnabledFunc:Function;
+	private var m_getSprintFunc:Function;
 	private var m_version:String;
 	private var m_dragging:Boolean;
 	private var m_x:Number;
@@ -59,7 +60,7 @@ class com.boosprint.BIcon
 	// Fifth is the path to your icon as seen in-game using Ctrl + Shift + F2 (the debug window). Can be undefined if you have no icon (this also means your add-on won't be slotable).
 	private var VTIOAddonInfo_s:String;
 	
-	public function BIcon(parent:MovieClip, icon:MovieClip, version:String, toggleLeftVisibleFunc:Function, toggleRightVisibleFunc:Function, toggleShiftLeftVisibleFunc:Function, ctrlToggleVisibleFunc:Function, x:Number, y:Number, isEnabledFunction:Function)
+	public function BIcon(parent:MovieClip, icon:MovieClip, version:String, toggleLeftVisibleFunc:Function, toggleRightVisibleFunc:Function, toggleShiftLeftVisibleFunc:Function, ctrlToggleVisibleFunc:Function, x:Number, y:Number, isEnabledFunction:Function, getSprintFunc:Function)
 	{
 		if (icon == null)
 		{
@@ -73,6 +74,7 @@ class com.boosprint.BIcon
 		m_toggleShiftLeftVisibleFunc = toggleShiftLeftVisibleFunc;
 		m_ctrlToggleVisibleFunc = ctrlToggleVisibleFunc;
 		m_isEnabledFunc = isEnabledFunction;
+		m_getSprintFunc = getSprintFunc;
 		m_dragging = false;
 		
 		if (x < 0 || x > Stage.width - 18)
@@ -206,6 +208,15 @@ class com.boosprint.BIcon
 			else
 			{
 				tooltipData.AddAttribute("", "<font face='_StandardFont' size='12' color='#FFFFFF'>Auto sprint: </font><font face='_StandardFont' size='12' color='#FF0000'>Off</font>");
+			}
+			if (m_getSprintFunc == null)
+			{
+				tooltipData.AddAttribute("", "<font face='_StandardFont' size='12' color='#FFFFFF'>Sprint: Unknown</font>");
+			}
+			else
+			{
+				var sprintName:String = m_getSprintFunc();
+				tooltipData.AddAttribute("", "<font face='_StandardFont' size='12' color='#FFFFFF'>Sprint: " + sprintName + "</font>");
 			}
 			tooltipData.AddAttributeSplitter();
 			tooltipData.AddAttribute("", "<font face='_StandardFont' size='12' color='#FFFFFF'>Left click to choose a sprint</font>");

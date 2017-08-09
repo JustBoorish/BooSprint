@@ -88,7 +88,7 @@ class com.boosprint.SprintSelector
 		}
 	}
 	
-	private static function GetSprintFromTag(sprintTag:Number):String
+	public static function GetSprintFromTag(sprintTag:Number):String
 	{
 		var ret:String = "None";
 		
