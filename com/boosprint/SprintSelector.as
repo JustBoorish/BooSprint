@@ -136,13 +136,13 @@ class com.boosprint.SprintSelector
 		var ownedNodes:Array = new Array();
 		for (var i = 0; i < allNodes.length; i++)
 		{
-			if (Utils.GetGameTweak("HideMount_" + allNodes[i].m_Id) == 0)
-			{
+			//if (Utils.GetGameTweak("HideMount_" + allNodes[i].m_Id) == 0)
+			//{
 				if (!LoreBase.IsLocked(allNodes[i].m_Id))
 				{
 					ownedNodes.push(allNodes[i]);
 				}
-			}
+			//}
 		}
 		
 		return ownedNodes;

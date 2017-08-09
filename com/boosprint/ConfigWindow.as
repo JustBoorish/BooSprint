@@ -37,6 +37,7 @@ class com.boosprint.ConfigWindow
 	private var m_helpIcon:MovieClip;
 	private var m_settings:Object;
 	private var m_enabledCheck:Checkbox;
+	private var m_keyCheck:Checkbox;
 	private var m_interval:TextField;
 	
 	public function ConfigWindow(parent:MovieClip, title:String, x:Number, y:Number, width:Number, closedCallback:Function, helpIcon:String, settings:Object) 
@@ -76,6 +77,7 @@ class com.boosprint.ConfigWindow
 		{
 			m_enabledCheck.SetChecked(Settings.GetSprintEnabled(m_settings));
 			m_interval.text = String(Settings.GetSprintInterval(m_settings));
+			m_keyCheck.SetChecked(Settings.GetOverrideKey(m_settings));
 		}
 		
 		m_frame._visible = visible;
@@ -84,6 +86,7 @@ class com.boosprint.ConfigWindow
 		{
 			Settings.SetSprintEnabled(m_settings, m_enabledCheck.IsChecked());
 			Settings.SetSprintInterval(m_settings, Number(m_interval.text));
+			Settings.SetOverrideKey(m_settings, m_keyCheck.IsChecked());
 			
 			if (m_closedCallback != null)
 			{
@@ -223,6 +226,11 @@ class com.boosprint.ConfigWindow
 		m_interval.background = true;
 		m_interval.textColor = 0xFFFFFF;
 		m_interval.backgroundColor = 0x2E2E2E;
+		
+		var keyText:String = "Override sprint key";
+		var keyExtents:Object = Text.GetTextExtent(keyText, m_textFormat, configWindow);
+		m_keyCheck = new Checkbox("KeyCheck", configWindow, 20, 10 + m_interval._y + m_interval._height + keyExtents.height / 2 - checkSize / 2, checkSize, null, true);
+		Graphics.DrawText("KeyLabel", configWindow, keyText, m_textFormat, 30 + checkSize, 10 + m_interval._y + m_interval._height, keyExtents.width, keyExtents.height);		
 	}
 	
 	private function onHelpPress():Void

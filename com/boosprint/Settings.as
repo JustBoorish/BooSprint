@@ -11,6 +11,7 @@ class com.boosprint.Settings
 	private static var SPRINT_TAG:String = "SPRINT_TAG";
 	private static var SPRINT_ENABLED:String = "SPRINT_ENABLED";
 	private static var SPRINT_INTERVAL:String = "SPRINT_INTERVAL";
+	private static var OVERRIDE_KEY:String = "OVERRIDE_KEY";
 	
 	public static var Separator:String = "|";
 	public static var Enabled:String = "enabled";
@@ -207,7 +208,7 @@ class com.boosprint.Settings
 	
 	public static function SetSprintTag(settings:Object, newTag:Number):Void
 	{
-		if (settings != null && newTag != null && newTag > 0)
+		if (settings != null && newTag != null && newTag >= 0)
 		{
 			settings[SPRINT_TAG] = newTag;
 		}
@@ -245,6 +246,38 @@ class com.boosprint.Settings
 		}
 	}
 	
+	public static function GetOverrideKey(settings:Object):Boolean
+	{
+		if (settings != null)
+		{
+			if (settings[OVERRIDE_KEY] == 1)
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		
+		return false;
+	}
+	
+	public static function SetOverrideKey(settings:Object, newValue:Boolean):Void
+	{
+		if (settings != null)
+		{
+			if (newValue == true)
+			{
+				settings[OVERRIDE_KEY] = 1;
+			}
+			else
+			{
+				settings[OVERRIDE_KEY] = 0;
+			}
+		}
+	}
+	
 	public static function GetSprintInterval(settings:Object):Number
 	{
 		if (settings != null)
@@ -252,12 +285,12 @@ class com.boosprint.Settings
 			return settings[SPRINT_INTERVAL];
 		}
 		
-		return 5;
+		return 4;
 	}
 	
 	public static function SetSprintInterval(settings:Object, newInterval:Number):Void
 	{
-		if (settings != null && newInterval != null && newInterval > 1 && newInterval <= 3600)
+		if (settings != null && newInterval != null && newInterval >= 1 && newInterval <= 3600)
 		{
 			settings[SPRINT_INTERVAL] = newInterval;
 		}

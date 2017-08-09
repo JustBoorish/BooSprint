@@ -9,14 +9,17 @@ import com.GameInterface.Game.Character;
 import com.GameInterface.SpellBase;
 import com.GameInterface.Game.BuffData;
 import com.GameInterface.DistributedValue;
+import com.GameInterface.Input;
 import com.Utils.Archive;
 import com.Utils.StringUtils;
 import mx.utils.Delegate;
 
 class com.boosprint.Controller extends MovieClip
 {
-	private static var VERSION:String = "1.0";
+	private static var VERSION:String = "1.1";
 
+	private static var m_instance:Controller = null;
+	
 	private var m_debug:DebugWindow = null;
 	private var m_icon:BIcon;
 	private var m_mc:MovieClip;
@@ -29,6 +32,8 @@ class com.boosprint.Controller extends MovieClip
 	private var m_sprintDV:DistributedValue;
 	private var m_configWindow:ConfigWindow;
 	private var m_sprintSelectorWindow:SprintSelector;
+	private var m_dismountID:Number = -1;
+	private var m_dismountCount:Number = 0;
 	
 	//On Load
 	function onLoad():Void
@@ -36,6 +41,7 @@ class com.boosprint.Controller extends MovieClip
 		Settings.SetVersion(VERSION);
 		
 		m_mc = this;
+		m_instance = this;
 		
 		m_clientCharacter = Character.GetClientCharacter();
 		
@@ -78,16 +84,18 @@ class com.boosprint.Controller extends MovieClip
 			DebugWindow.Log("BooSprint OnModuleActivated: connect " + m_characterName);
 			m_settings = Settings.Load(m_settingsPrefix, m_defaults);
 			
-			m_icon = new BIcon(m_mc, _root["boosprint\\boosprint"].BooSprintIcon, VERSION, Delegate.create(this, ToggleSprintSelectorVisible), Delegate.create(this, ToggleConfigVisible), Delegate.create(this, ToggleSprint), Delegate.create(this, ToggleDebugVisible), m_settings[BIcon.ICON_X], m_settings[BIcon.ICON_Y], Delegate.create(this, IsSprintEnabled));
+			m_icon = new BIcon(m_mc, _root["boosprint\\boosprint"].BooSprintIcon, VERSION, Delegate.create(this, ToggleSprintSelectorVisible), Delegate.create(this, ToggleConfigVisible), Delegate.create(this, ToggleSprintEnabled), Delegate.create(this, ToggleDebugVisible), m_settings[BIcon.ICON_X], m_settings[BIcon.ICON_Y], Delegate.create(this, IsSprintEnabled));
 		}
 		
-		StartAutoSprint();
+		StartAutoSprint();		
+		OverwriteSprintKey(Settings.GetOverrideKey(m_settings));
 	}
 	
 	function OnModuleDeactivated():Archive
 	{		
 		StopAutoSprint();
 		SaveSettings();
+		OverwriteSprintKey(false);
 		m_sprintDV.SignalChanged.Disconnect(SprintChanged, this);
 
 		var ret:Archive = Settings.GetArchive();
@@ -122,8 +130,9 @@ class com.boosprint.Controller extends MovieClip
 		m_defaults[BIcon.ICON_X] = -1;
 		m_defaults[BIcon.ICON_Y] = -1;
 		Settings.SetSprintTag(m_defaults, 0);
+		Settings.SetSprintInterval(m_defaults, 4);
 		Settings.SetSprintEnabled(m_defaults, true);
-		Settings.SetSprintInterval(m_defaults, 5);
+		Settings.SetOverrideKey(m_defaults, true);
 	}
 	
 	private function SaveSettings():Void
@@ -182,16 +191,57 @@ class com.boosprint.Controller extends MovieClip
 		{
 			if (newTag != Settings.GetSprintTag(m_settings))
 			{
+				if (m_dismountID != -1)
+				{
+					clearInterval(m_dismountID);
+				}
+				
+				m_dismountID = -1;
+				m_dismountCount = 0;
+				
+				StopAutoSprint();
 				Dismount();
 				Settings.SetSprintTag(m_settings, newTag);
 				SaveSettings();
-				setTimeout(Delegate.create(this, SprintIfNeeded), 250);
+				m_dismountID = setInterval(Delegate.create(this, SprintAfterDismount), 100);
 			}
+		}
+	}
+	
+	private function SprintAfterDismount():Void
+	{
+		var stop:Boolean = false;
+		if (IsSprinting() == true)
+		{
+			++m_dismountCount;
+			if (m_dismountCount > 15)
+			{
+				stop = true;
+			}
+		}
+		else
+		{
+			stop = true;
+			SprintIfNeeded();
+		}
+		
+		if (stop == true)
+		{
+			clearInterval(m_dismountID);
+			m_dismountID = -1;
+			m_dismountCount = 0;
+			
+			StartAutoSprint();
 		}
 	}
 	
 	private function ToggleConfigVisible():Void
 	{
+		if (m_sprintSelectorWindow != null && m_sprintSelectorWindow.GetVisible() == true)
+		{
+			ToggleSprintSelectorVisible();
+		}
+		
 		if (m_configWindow == null)
 		{
 			m_configWindow = new ConfigWindow(m_mc, "BooSprint", m_settings[Settings.X], m_settings[Settings.Y], 300, Delegate.create(this, ConfigClosed), "BooSprintHelp", m_settings);
@@ -210,6 +260,8 @@ class com.boosprint.Controller extends MovieClip
 		SaveSettings();
 		m_configWindow.Unload();
 		m_configWindow = null;
+
+		OverwriteSprintKey(Settings.GetOverrideKey(m_settings));
 		StartAutoSprint();
 	}
 	
@@ -239,20 +291,12 @@ class com.boosprint.Controller extends MovieClip
 		
 		if (m_clientCharacter != null)
 		{
-			if (m_clientCharacter.IsInCombat() != true && m_clientCharacter.IsInCinematic() != true && m_clientCharacter.IsInCharacterCreation() != true && IsSprinting() != true)
+			if (m_clientCharacter.IsInCombat() != true && m_clientCharacter.IsInCinematic() != true && m_clientCharacter.IsInCharacterCreation() != true && m_clientCharacter.IsGhosting() != true && IsSprinting() != true)
 			{
 				var progress:Number = m_clientCharacter.GetCommandProgress();
 				if (progress == null || progress == 0)
 				{
-					var sprintTag:Number = Settings.GetSprintTag(m_settings);
-					if (sprintTag == null || sprintTag == 0)
-					{
-						SpellBase.SummonMountFromTag();
-					}
-					else
-					{
-						SpellBase.SummonMountFromTag(Settings.GetSprintTag(m_settings));
-					}
+					Mount();
 				}
 			}
 		}
@@ -266,6 +310,19 @@ class com.boosprint.Controller extends MovieClip
 			{
 				SpellBase.SummonMountFromTag();
 			}
+		}
+	}
+	
+	private function Mount():Void
+	{
+		var sprintTag:Number = Settings.GetSprintTag(m_settings);
+		if (sprintTag == null || sprintTag == 0)
+		{
+			SpellBase.SummonMountFromTag();
+		}
+		else
+		{
+			SpellBase.SummonMountFromTag(sprintTag);
 		}
 	}
 	
@@ -289,8 +346,47 @@ class com.boosprint.Controller extends MovieClip
 		return Settings.GetSprintEnabled(m_settings);
 	}
 	
-	private function ToggleSprint():Void
+	private function ToggleSprintEnabled():Void
 	{
 		Settings.SetSprintEnabled(m_settings, !Settings.GetSprintEnabled(m_settings));
+		StartAutoSprint();
 	}
+	
+	private function OverwriteSprintKey(enabled:Boolean):Void
+	{
+		var func:String;
+		if (enabled == true)
+		{
+			func = "com.boosprint.Controller.SprintKeyHandler";
+		}
+		else
+		{
+			func = "";
+		}
+		
+		Input.RegisterHotkey(_global.Enums.InputCommand.e_InputCommand_Movement_SprintToggle, func, _global.Enums.Hotkey.eHotkeyDown, 0);
+	}
+	
+	private function ToggleSprint():Void
+	{
+		if (m_clientCharacter != null)
+		{
+			if (IsSprinting() == true)
+			{
+				SpellBase.SummonMountFromTag();
+			}
+			else
+			{
+				Mount();
+			}
+		}
+	}
+	
+	private static function SprintKeyHandler(keyCode:Number):Void
+	{
+		if (m_instance != null)
+		{
+			m_instance.ToggleSprint();
+		}
+	}	
 }

@@ -101,6 +101,11 @@ class com.boosprint.DebugWindow
 		if (logLevel >= m_logLevel)
 		{
 			m_text = GetDate() + "  " + str + "\n" + m_text.substring(0, 10000);
+
+			if (m_debug._visible == true)
+			{
+				m_textArea.text = m_text;
+			}
 		}
 	}
 	

@@ -17,8 +17,9 @@ Delete the BooSprint directory from \Data\Gui\Customized\Flash\
 
 Change Log
 
-Version 1.0
+Version 1.1
 Initial version allowing you to:
 - choose any of your mounts
 - turn auto sprint on/off
 - set the polling frequency for the auto sprint
+- override the Sprint key bind
