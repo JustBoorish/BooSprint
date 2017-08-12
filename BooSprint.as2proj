@@ -45,6 +45,9 @@
     <compile path="com\boosprint\SprintSelector.as" />
     <compile path="com\boosprint\ConfigWindow.as" />
     <compile path="com\boosprint\Checkbox.as" />
+    <compile path="com\boosprint\IntervalCounter.as" />
+    <compile path="com\boosprint\MountHelper.as" />
+    <compile path="com\boosprint\PetHelper.as" />
   </compileTargets>
   <!-- Assets to embed into the output SWF -->
   <library>

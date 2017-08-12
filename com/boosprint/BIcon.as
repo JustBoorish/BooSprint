@@ -6,6 +6,7 @@ import com.GameInterface.Tooltip.TooltipManager;
 import com.GameInterface.Log;
 import mx.utils.Delegate;
 import com.boosprint.DebugWindow;
+import com.boosprint.IntervalCounter;
 
 /**
  * There is no copyright on this code
@@ -38,6 +39,7 @@ class com.boosprint.BIcon
 	private var m_ctrlToggleVisibleFunc:Function;
 	private var m_isEnabledFunc:Function;
 	private var m_getSprintFunc:Function;
+	private var m_getPetFunc:Function;
 	private var m_version:String;
 	private var m_dragging:Boolean;
 	private var m_x:Number;
@@ -49,8 +51,7 @@ class com.boosprint.BIcon
 	private var m_VTIOIsLoadedMonitor:DistributedValue;
 
 	// Variables for checking if the compass is there
-	private var m_CompassCheckTimerID:Number;
-	private var m_CompassCheckTimerCount:Number = 0;
+	private var m_CompassCheckTimer:IntervalCounter;
 
 	// The add-on information string, separated into 5 segments.
 	// First is the add-on name as it will appear in the Add-on Manager list.
@@ -60,7 +61,7 @@ class com.boosprint.BIcon
 	// Fifth is the path to your icon as seen in-game using Ctrl + Shift + F2 (the debug window). Can be undefined if you have no icon (this also means your add-on won't be slotable).
 	private var VTIOAddonInfo_s:String;
 	
-	public function BIcon(parent:MovieClip, icon:MovieClip, version:String, toggleLeftVisibleFunc:Function, toggleRightVisibleFunc:Function, toggleShiftLeftVisibleFunc:Function, ctrlToggleVisibleFunc:Function, x:Number, y:Number, isEnabledFunction:Function, getSprintFunc:Function)
+	public function BIcon(parent:MovieClip, icon:MovieClip, version:String, toggleLeftVisibleFunc:Function, toggleRightVisibleFunc:Function, toggleShiftLeftVisibleFunc:Function, ctrlToggleVisibleFunc:Function, x:Number, y:Number, isEnabledFunction:Function, getSprintFunc:Function, getPetFunc:Function)
 	{
 		if (icon == null)
 		{
@@ -75,6 +76,7 @@ class com.boosprint.BIcon
 		m_ctrlToggleVisibleFunc = ctrlToggleVisibleFunc;
 		m_isEnabledFunc = isEnabledFunction;
 		m_getSprintFunc = getSprintFunc;
+		m_getPetFunc = getPetFunc;
 		m_dragging = false;
 		
 		if (x < 0 || x > Stage.width - 18)
@@ -136,8 +138,16 @@ class com.boosprint.BIcon
 		m_icon.onRollOver = Delegate.create(this, onRollover);
 		m_icon.onRollOut = Delegate.create(this, onRollout);
 		
-		m_CompassCheckTimerID = setInterval(Delegate.create(this, PositionIcon), 100);
-
+		if (m_x == -1 || m_y == -1)
+		{
+			m_CompassCheckTimer = new IntervalCounter("IconPosition", IntervalCounter.WAIT_MILLIS, IntervalCounter.MAX_ITERATIONS, Delegate.create(this, PositionIcon), Delegate.create(this, PositionOnCompassMissing), null, IntervalCounter.COMPLETE_ON_ERROR);
+		}
+		else
+		{
+			m_icon._x = m_x;
+			m_icon._y = m_y;
+		}
+		
 		// Check if VTIO is loaded (if it loaded before this add-on was).
 		SlotCheckVTIOIsLoaded();
 	}
@@ -218,6 +228,14 @@ class com.boosprint.BIcon
 				var sprintName:String = m_getSprintFunc();
 				tooltipData.AddAttribute("", "<font face='_StandardFont' size='12' color='#FFFFFF'>Sprint: " + sprintName + "</font>");
 			}
+			if (m_getPetFunc != null)
+			{
+				var petName:String = m_getPetFunc();
+				if (petName != null)
+				{
+					tooltipData.AddAttribute("", "<font face='_StandardFont' size='12' color='#FFFFFF'>Pet: " + petName + "</font>");
+				}
+			}
 			tooltipData.AddAttributeSplitter();
 			tooltipData.AddAttribute("", "<font face='_StandardFont' size='12' color='#FFFFFF'>Left click to choose a sprint</font>");
 			tooltipData.AddAttribute("", "<font face='_StandardFont' size='12' color='#FFFFFF'>Shift+Left click to toggle auto sprint</font>");
@@ -234,37 +252,36 @@ class com.boosprint.BIcon
 	}
 
 	// The compass check function.
-	private function PositionIcon():Void
+	private function PositionIcon():Boolean
 	{
-		if (m_x != -1 && m_y != -1)
+		var finish:Boolean = false;
+		if (m_dragging == true)
 		{
-			clearInterval(m_CompassCheckTimerID);
-			m_icon._x = m_x;
-			m_icon._y = m_y;
+			finish = true;
 		}
 		else
 		{
-			m_CompassCheckTimerCount++;
-			if (m_dragging == true || m_CompassCheckTimerCount > 256)
-			{
-				clearInterval(m_CompassCheckTimerID);
-			}
-			
 			if (_root.compass != undefined && _root.compass._x != undefined && _root.compass._x > 0) {
 				var myPoint:Object = new Object();
 				myPoint.x = _root.compass._x - 220;
 				myPoint.y = _root.compass._y + 0;
 				_root.localToGlobal(myPoint);
-				_root.boosprint.globalToLocal(myPoint);
+				_root.boobuilds.globalToLocal(myPoint);
 				m_icon._x = myPoint.x;
 				m_icon._y = myPoint.y;
-				clearInterval(m_CompassCheckTimerID);
+				finish = true;
 			}
-			else
-			{
-				m_icon._x = Stage.width / 4 + 48;
-				m_icon._y = 2;
-			}
+		}
+		
+		return finish;
+	}
+	
+	private function PositionOnCompassMissing(isError:Boolean):Void
+	{
+		if (isError == true)
+		{
+			m_icon._x = Stage.width / 4 + 80;
+			m_icon._y = 2;
 		}
 	}
 

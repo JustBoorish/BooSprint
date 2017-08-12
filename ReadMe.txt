@@ -17,6 +17,9 @@ Delete the BooSprint directory from \Data\Gui\Customized\Flash\
 
 Change Log
 
+Version 1.2
+- Added support for summoning pets
+
 Version 1.1
 Initial version allowing you to:
 - choose any of your mounts

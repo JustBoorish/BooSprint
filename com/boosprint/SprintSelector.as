@@ -29,13 +29,17 @@ class com.boosprint.SprintSelector
 	private var m_frame:MovieClip;
 	private var m_name:String;
 	private var m_menu:MenuPanel;
-	private var m_callback:Function;
+	private var m_sprintCallback:Function;
+	private var m_petCallback:Function;
+	private var m_petsEnabled:Boolean;
 	
-	public function SprintSelector(parent:MovieClip, name:String, callback:Function) 
+	public function SprintSelector(parent:MovieClip, name:String, sprintCallback:Function, petCallback:Function, petsEnabled:Boolean) 
 	{
 		m_parent = parent;
 		m_name = name;
-		m_callback = callback;
+		m_sprintCallback = sprintCallback;
+		m_petCallback = petCallback;
+		m_petsEnabled = petsEnabled;
 		
 		m_frame = parent.createEmptyMovieClip(name + "Frame", parent.getNextHighestDepth());
 		BuildMenu();
@@ -62,15 +66,39 @@ class com.boosprint.SprintSelector
 	
 	private function BuildMenu():Void
 	{
-		m_menu = new MenuPanel(m_frame, "Mounts", 4);
+		m_menu = new MenuPanel(m_frame, "MountsAndPets", 4);
 
+		var parentMenu:MenuPanel = m_menu;
+		if (m_petsEnabled == true)
+		{
+			parentMenu = new MenuPanel(m_frame, "Sprint", 4);
+			m_menu.AddSubMenu("Sprint", parentMenu, Colors.e_ColorPassiveSpellHighlight, Colors.e_ColorPassiveSpellBackground);
+		}
+		
 		var nodes:Array = GetSprintData();
 		for (var indx:Number = 0; indx < nodes.length; ++indx)
 		{
 			var thisNode:LoreNode = nodes[indx];
 			if (thisNode != null)
 			{
-				m_menu.AddItem(thisNode.m_Name, Delegate.create(this, SprintCallback), Colors.e_ColorPassiveSpellHighlight, Colors.e_ColorPassiveSpellBackground);
+				parentMenu.AddItem(thisNode.m_Name, Delegate.create(this, SprintCallback), Colors.e_ColorPassiveSpellHighlight, Colors.e_ColorPassiveSpellBackground);
+			}
+		}
+		
+		if (m_petsEnabled == true)
+		{
+			var petMenu:MenuPanel = new MenuPanel(m_frame, "Pet", 4);
+			petMenu.AddItem("None", Delegate.create(this, PetCallback), Colors.e_ColorPassiveSpellHighlight, Colors.e_ColorPassiveSpellBackground);
+			m_menu.AddSubMenu("Pet", petMenu, Colors.e_ColorPassiveSpellHighlight, Colors.e_ColorPassiveSpellBackground);
+			
+			var petNodes:Array = GetPetData();
+			for (var indx:Number = 0; indx < petNodes.length; ++indx)
+			{
+				var thisNode:LoreNode = petNodes[indx];
+				if (thisNode != null)
+				{
+					petMenu.AddItem(thisNode.m_Name, Delegate.create(this, PetCallback), Colors.e_ColorPassiveSpellHighlight, Colors.e_ColorPassiveSpellBackground);
+				}
 			}
 		}
 		
@@ -82,9 +110,20 @@ class com.boosprint.SprintSelector
 		m_menu.SetVisible(false);
 
 		var tag:Number = GetTagFromSprintName(sprintName);
-		if (tag != null && m_callback != null)
+		if (tag != null && m_sprintCallback != null)
 		{
-			m_callback(tag);
+			m_sprintCallback(tag);
+		}
+	}
+	
+	private function PetCallback(petName:String):Void
+	{
+		m_menu.SetVisible(false);
+
+		var tag:Number = GetTagFromPetName(petName);
+		if (m_petCallback != null)
+		{
+			m_petCallback(tag);
 		}
 	}
 	
@@ -143,6 +182,63 @@ class com.boosprint.SprintSelector
 					ownedNodes.push(allNodes[i]);
 				}
 			//}
+		}
+		
+		return ownedNodes;
+	}
+	
+	public static function GetPetFromTag(sprintTag:Number):String
+	{
+		var ret:String = "None";
+		
+		if (sprintTag != null)
+		{
+			var nodes:Array = GetPetData();
+			for (var indx:Number = 0; indx < nodes.length; ++indx)
+			{
+				var node:LoreNode = LoreNode(nodes[indx]);
+				if (node != null && node.m_Id == sprintTag)
+				{
+					ret = node.m_Name;
+					break;
+				}
+			}
+		}
+		
+		return ret;
+	}
+	
+	public static function GetTagFromPetName(sprintName:String):Number
+	{
+		var ret:Number = null;
+		if (sprintName != null)
+		{
+			var nodes:Array = GetPetData();
+			for (var indx:Number = 0; indx < nodes.length; ++indx)
+			{
+				var node:LoreNode = LoreNode(nodes[indx]);
+				if (node != null && node.m_Name == sprintName)
+				{
+					ret = node.m_Id;
+					break;
+				}
+			}
+		}
+		
+		return ret;
+	}
+	
+	private static function GetPetData():Array
+	{
+		var allNodes:Array = Lore.GetPetTree().m_Children;
+		allNodes.sortOn("m_Name");
+		var ownedNodes:Array = new Array();
+		for (var i = 0; i < allNodes.length; i++)
+		{
+			if (!LoreBase.IsLocked(allNodes[i].m_Id))
+			{
+				ownedNodes.push(allNodes[i]);
+			}
 		}
 		
 		return ownedNodes;

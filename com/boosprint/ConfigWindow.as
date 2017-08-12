@@ -38,6 +38,7 @@ class com.boosprint.ConfigWindow
 	private var m_settings:Object;
 	private var m_enabledCheck:Checkbox;
 	private var m_keyCheck:Checkbox;
+	private var m_petCheck:Checkbox;
 	private var m_interval:TextField;
 	
 	public function ConfigWindow(parent:MovieClip, title:String, x:Number, y:Number, width:Number, closedCallback:Function, helpIcon:String, settings:Object) 
@@ -53,7 +54,7 @@ class com.boosprint.ConfigWindow
 		m_maxWidth = width;
 		m_margin = 6;
 		m_titleHeight = 60;
-		m_maxHeight = (210 - m_titleHeight);
+		m_maxHeight = (240 - m_titleHeight);
 		
 		m_textFormat = Graphics.GetTextFormat();
 		
@@ -78,6 +79,7 @@ class com.boosprint.ConfigWindow
 			m_enabledCheck.SetChecked(Settings.GetSprintEnabled(m_settings));
 			m_interval.text = String(Settings.GetSprintInterval(m_settings));
 			m_keyCheck.SetChecked(Settings.GetOverrideKey(m_settings));
+			m_petCheck.SetChecked(Settings.GetPetEnabled(m_settings));
 		}
 		
 		m_frame._visible = visible;
@@ -87,6 +89,7 @@ class com.boosprint.ConfigWindow
 			Settings.SetSprintEnabled(m_settings, m_enabledCheck.IsChecked());
 			Settings.SetSprintInterval(m_settings, Number(m_interval.text));
 			Settings.SetOverrideKey(m_settings, m_keyCheck.IsChecked());
+			Settings.SetPetEnabled(m_settings, m_petCheck.IsChecked());
 			
 			if (m_closedCallback != null)
 			{
@@ -230,7 +233,12 @@ class com.boosprint.ConfigWindow
 		var keyText:String = "Override sprint key";
 		var keyExtents:Object = Text.GetTextExtent(keyText, m_textFormat, configWindow);
 		m_keyCheck = new Checkbox("KeyCheck", configWindow, 20, 10 + m_interval._y + m_interval._height + keyExtents.height / 2 - checkSize / 2, checkSize, null, true);
-		Graphics.DrawText("KeyLabel", configWindow, keyText, m_textFormat, 30 + checkSize, 10 + m_interval._y + m_interval._height, keyExtents.width, keyExtents.height);		
+		var keyLabel:TextField = Graphics.DrawText("KeyLabel", configWindow, keyText, m_textFormat, 30 + checkSize, 10 + m_interval._y + m_interval._height, keyExtents.width, keyExtents.height);		
+		
+		var petText:String = "Enable pet handling";
+		var petExtents:Object = Text.GetTextExtent(petText, m_textFormat, configWindow);
+		m_petCheck = new Checkbox("PetCheck", configWindow, 20, 10 + keyLabel._y + keyLabel._height + petExtents.height / 2 - checkSize / 2, checkSize, null, true);
+		Graphics.DrawText("PetLabel", configWindow, petText, m_textFormat, 30 + checkSize, 10 + keyLabel._y + keyLabel._height, petExtents.width, petExtents.height);		
 	}
 	
 	private function onHelpPress():Void

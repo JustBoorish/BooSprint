@@ -11,6 +11,8 @@ class com.boosprint.Settings
 	private static var SPRINT_TAG:String = "SPRINT_TAG";
 	private static var SPRINT_ENABLED:String = "SPRINT_ENABLED";
 	private static var SPRINT_INTERVAL:String = "SPRINT_INTERVAL";
+	private static var PET_TAG:String = "PET_TAG";
+	private static var PET_ENABLED:String = "PET_ENABLED";
 	private static var OVERRIDE_KEY:String = "OVERRIDE_KEY";
 	
 	public static var Separator:String = "|";
@@ -145,7 +147,7 @@ class com.boosprint.Settings
 				var entryName:String = GetFullName(prefix, prop);
 				m_archive.DeleteEntry(entryName);
 				m_archive.AddEntry(entryName, settings[prop]);
-				DebugWindow.Log(DebugWindow.Debug, "Settings.Save Set " + entryName + "=" + settings[prop] + " default=" + defaults[prop]);
+				//DebugWindow.Log(DebugWindow.Debug, "Settings.Save Set " + entryName + "=" + settings[prop] + " default=" + defaults[prop]);
 			}
 			else
 			{
@@ -184,7 +186,7 @@ class com.boosprint.Settings
 			}
 			else
 			{
-				DebugWindow.Log(DebugWindow.Debug, "Settings.Load Get " + GetFullName(prefix, prop) + "=" + settings[prop]);
+				//DebugWindow.Log(DebugWindow.Debug, "Settings.Load Get " + GetFullName(prefix, prop) + "=" + settings[prop]);
 			}
 		}
 		
@@ -242,6 +244,56 @@ class com.boosprint.Settings
 			else
 			{
 				settings[SPRINT_ENABLED] = 0;
+			}
+		}
+	}
+	
+	public static function GetPetTag(settings:Object):Number
+	{
+		if (settings != null)
+		{
+			return settings[PET_TAG];
+		}
+		
+		return null;
+	}
+	
+	public static function SetPetTag(settings:Object, newTag:Number):Void
+	{
+		if (settings != null && newTag != null && newTag >= 0)
+		{
+			settings[PET_TAG] = newTag;
+		}
+	}
+	
+	public static function GetPetEnabled(settings:Object):Boolean
+	{
+		if (settings != null)
+		{
+			if (settings[PET_ENABLED] == 1)
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		
+		return false;
+	}
+	
+	public static function SetPetEnabled(settings:Object, newEnabled:Boolean):Void
+	{
+		if (settings != null)
+		{
+			if (newEnabled == true)
+			{
+				settings[PET_ENABLED] = 1;
+			}
+			else
+			{
+				settings[PET_ENABLED] = 0;
 			}
 		}
 	}
