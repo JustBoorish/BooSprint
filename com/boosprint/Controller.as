@@ -102,7 +102,6 @@ class com.boosprint.Controller extends MovieClip
 			var playfield:Number = m_clientCharacter.GetPlayfieldID();
 			if (playfield != m_oldPlayfield)
 			{
-				DebugWindow.Log(DebugWindow.Debug, "Playfield " + playfield);
 				if (playfield != null)
 				{
 					m_oldPlayfield = playfield;
@@ -244,7 +243,6 @@ class com.boosprint.Controller extends MovieClip
 	private function PetSelected(newTag:Number):Void
 	{
 		var oldTag:Number = Settings.GetPetTag(m_settings);
-		DebugWindow.Log(DebugWindow.Debug, "newtag " + newTag + " oldtag " + oldTag);
 		if (newTag != null and newTag > 0)
 		{
 			Settings.SetPetTag(m_settings, newTag);
