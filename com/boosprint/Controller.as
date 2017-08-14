@@ -18,7 +18,7 @@ import mx.utils.Delegate;
 
 class com.boosprint.Controller extends MovieClip
 {
-	private static var VERSION:String = "1.2";
+	private static var VERSION:String = "1.3";
 
 	private static var m_instance:Controller = null;
 	

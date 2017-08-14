@@ -17,6 +17,9 @@ Delete the BooSprint directory from \Data\Gui\Customized\Flash\
 
 Change Log
 
+Version 1.3
+- Fixed crash when player has more than 23 pets
+
 Version 1.2
 - Added support for summoning pets
 
