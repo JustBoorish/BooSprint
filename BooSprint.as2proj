@@ -48,6 +48,12 @@
     <compile path="com\boosprint\IntervalCounter.as" />
     <compile path="com\boosprint\MountHelper.as" />
     <compile path="com\boosprint\PetHelper.as" />
+    <compile path="com\boosprint\Group.as" />
+    <compile path="com\boosprint\EditGroupDialog.as" />
+    <compile path="com\boosprint\ChangeGroupDialog.as" />
+    <compile path="com\boosprint\Entry.as" />
+    <compile path="com\boosprint\EntryList.as" />
+    <compile path="com\boosprint\OptionsTab.as" />
   </compileTargets>
   <!-- Assets to embed into the output SWF -->
   <library>

@@ -7,9 +7,13 @@ import com.Utils.StringUtils;
 import com.boocommon.DebugWindow;
 import com.boocommon.MountHelper;
 import com.boocommon.PetHelper;
+import com.boocommon.TabWindow;
 import com.boosprint.BIcon;
-import com.boosprint.ConfigWindow;
+import com.boosprint.Entry;
+import com.boosprint.EntryList;
+import com.boosprint.OptionsTab;
 import com.boosprint.Controller;
+import com.boosprint.Group;
 import com.boosprint.Settings;
 import com.boosprint.SprintSelector;
 import mx.utils.Delegate;
@@ -17,6 +21,8 @@ import mx.utils.Delegate;
 class com.boosprint.Controller extends MovieClip
 {
 	private static var VERSION:String = "1.4";
+	private static var MAX_GROUPS:Number = 50;
+	private static var MAX_ENTRIES:Number = 350;
 
 	private static var m_instance:Controller = null;
 	
@@ -25,15 +31,19 @@ class com.boosprint.Controller extends MovieClip
 	private var m_mc:MovieClip;
 	private var m_defaults:Object;
 	private var m_settings:Object;
+	private var m_entries:Object;
+	private var m_groups:Array;
 	private var m_settingsPrefix:String = "BooSprint";
 	private var m_clientCharacter:Character;
 	private var m_characterName:String;
 	private var m_sprintID:Number;
 	private var m_sprintDV:DistributedValue;
 	private var m_petDV:DistributedValue;
-	private var m_configWindow:ConfigWindow;
+	private var m_configWindow:TabWindow;
 	private var m_sprintSelectorWindow:SprintSelector;
 	private var m_oldPlayfield:Number;
+	private var m_entryList:EntryList;
+	private var m_optionsTab:OptionsTab;
 	
 	//On Load
 	function onLoad():Void
@@ -88,6 +98,9 @@ class com.boosprint.Controller extends MovieClip
 			m_characterName = m_clientCharacter.GetName();
 			DebugWindow.Log("BooSprint OnModuleActivated: connect " + m_characterName);
 			m_settings = Settings.Load(m_settingsPrefix, m_defaults);
+			LoadGroups();
+			LoadEntries();
+			SetDefaultEntries();
 			
 			m_icon = new BIcon(m_mc, _root["boosprint\\boosprint"].BooSprintIcon, VERSION, Delegate.create(this, ToggleSprintSelectorVisible), Delegate.create(this, ToggleConfigVisible), Delegate.create(this, ToggleSprintEnabled), Delegate.create(this, ToggleDebugVisible), m_settings[BIcon.ICON_X], m_settings[BIcon.ICON_Y], Delegate.create(this, IsSprintEnabled), Delegate.create(this, GetCurrentSprintName), Delegate.create(this, GetCurrentPetName));
 		}
@@ -176,6 +189,131 @@ class com.boosprint.Controller extends MovieClip
 		m_settings[BIcon.ICON_Y] = pt.y;
 
 		Settings.Save(m_settingsPrefix, m_settings, m_defaults);
+		SaveGroups();
+		SaveEntries();
+	}
+	
+	private function SaveGroups():Void
+	{
+		var archive:Archive = Settings.GetArchive();
+		var groupNumber:Number = 1;
+		for (var indx:Number = 0; indx < m_groups.length; ++indx)
+		{
+			var thisGroup:Group = m_groups[indx];
+			if (thisGroup != null)
+			{
+				thisGroup.Save(Group.GROUP_PREFIX, archive, groupNumber);
+				++groupNumber;
+			}
+		}
+		
+		for (var indx:Number = groupNumber; indx <= MAX_GROUPS; ++indx)
+		{
+			Group.ClearArchive(Group.GROUP_PREFIX, archive, indx);
+		}
+	}
+	
+	private function LoadGroups():Void
+	{
+		m_groups = new Array();
+		var archive:Archive = Settings.GetArchive();
+		for (var indx:Number = 0; indx < MAX_GROUPS; ++indx)
+		{
+			var thisGroup:Group = Group.FromArchive(Group.GROUP_PREFIX, archive, indx + 1);
+			if (thisGroup != null)
+			{
+				m_groups.push(thisGroup);
+			}
+		}
+	}
+	
+	private function SetDefaultEntries():Void
+	{		
+		if (m_groups.length == 0)
+		{
+			m_groups = new Array();
+			m_entries = new Object();
+			m_groups.push(new Group(Group.GetNextID(m_groups), "Sprints", Group.GREEN));
+			m_groups.push(new Group(Group.GetNextID(m_groups), "Pets", Group.ORANGE));
+			
+			Entry.SetUnkownSprints(m_groups[0].GetID(), m_entries);
+			
+			var noPet:Entry = new Entry("No pet", 0, false, m_groups[1].GetID(), Entry.GetNextOrder(m_groups[1].GetID(), m_entries));
+			m_entries[noPet.GetTag()] = noPet;
+			Entry.SetUnkownPets(m_groups[1].GetID(), m_entries);
+		}
+		else
+		{
+			var newGroup:Group = null;
+			for (var indx:Number = 0; indx < m_groups.length; ++indx)
+			{
+				var thisGroup:Group = m_groups[indx];
+				if (thisGroup != null && thisGroup.GetName() == "New")
+				{
+					newGroup = thisGroup;
+					break;
+				}
+			}
+			
+			var addNewGroup:Boolean = false;
+			if (newGroup == null)
+			{
+				addNewGroup = true;
+				newGroup = new Group(Group.GetNextID(m_groups), "New", Group.GRAY);
+			}
+			
+			Entry.SetUnkownSprints(newGroup.GetID(), m_entries);
+			Entry.SetUnkownPets(newGroup.GetID(), m_entries);
+			
+			if (addNewGroup == true)
+			{
+				if (Entry.IsGroupEmpty(newGroup.GetID(), m_entries) != true)
+				{
+					m_groups.push(newGroup);
+				}
+			}
+		}
+	}
+	
+	private function SaveEntries():Void
+	{
+		var archive:Archive = Settings.GetArchive();
+		var entryNumber:Number = 1;
+		for (var indx:String in m_entries)
+		{
+			var thisEntry:Entry = m_entries[indx];
+			if (thisEntry != null)
+			{
+				thisEntry.Save(archive, entryNumber);
+				++entryNumber;
+			}
+		}
+		
+		for (var indx:Number = entryNumber; indx <= MAX_ENTRIES; ++indx)
+		{
+			Entry.ClearArchive(archive, indx);
+		}
+	}
+	
+	private function LoadEntries():Void
+	{
+		m_entries = new Object();
+		var archive:Archive = Settings.GetArchive();
+		for (var indx:Number = 0; indx < MAX_ENTRIES; ++indx)
+		{
+			var thisEntry:Entry = Entry.FromArchive(indx + 1, archive);
+			if (thisEntry != null)
+			{
+				if (Group.FindGroupWithID(m_groups, thisEntry.GetGroup()) != null)
+				{
+					m_entries[thisEntry.GetTag()] = thisEntry;
+				}
+				else
+				{
+					Entry.ClearArchive(archive, indx + 1);
+				}
+			}
+		}
 	}
 	
 	private function ToggleSprintSelectorVisible():Void
@@ -199,7 +337,7 @@ class com.boosprint.Controller extends MovieClip
 		
 		if (show == true)
 		{
-			m_sprintSelectorWindow = new SprintSelector(m_mc, "Sprint Selector", Delegate.create(this, SprintSelected), Delegate.create(this, PetSelected), Settings.GetPetEnabled(m_settings));
+			m_sprintSelectorWindow = new SprintSelector(m_mc, "Sprint Selector", m_groups, m_entries, Delegate.create(this, SprintSelected), Delegate.create(this, PetSelected));
 			var icon:MovieClip = m_icon.GetIcon();
 			if (_root._xmouse >= icon._x && _root._xmouse <= icon._x + icon._width &&
 				_root._ymouse >= icon._y && _root._ymouse <= icon._y + icon._height)
@@ -272,7 +410,11 @@ class com.boosprint.Controller extends MovieClip
 		
 		if (m_configWindow == null)
 		{
-			m_configWindow = new ConfigWindow(m_mc, "BooSprint", m_settings[Settings.X], m_settings[Settings.Y], 300, Delegate.create(this, ConfigClosed), "BooSprintHelp", m_settings);
+			m_entryList = new EntryList("EntryList", m_groups, m_entries, m_settings, Delegate.create(this, SprintSelected), Delegate.create(this, PetSelected));
+			m_optionsTab = new OptionsTab("Options", m_settings);
+			m_configWindow = new TabWindow(m_mc, "BooSprint", m_settings[Settings.X], m_settings[Settings.Y], 300, 400, Delegate.create(this, ConfigClosed), "BooSprintHelp", "https://tswact.wordpress.com/boosprint/");
+			m_configWindow.AddTab("Entries", m_entryList);
+			m_configWindow.AddTab("Options", m_optionsTab);
 		}
 		
 		m_configWindow.ToggleVisible();
@@ -313,7 +455,7 @@ class com.boosprint.Controller extends MovieClip
 			return;
 		}
 
-		var newTag:Number = SprintSelector.GetTagFromPetName(petName);
+		var newTag:Number = Entry.GetTagFromPetName(petName);
 		PetSelected(newTag);
 	}
 	
@@ -330,7 +472,7 @@ class com.boosprint.Controller extends MovieClip
 			return;
 		}
 
-		var newTag:Number = SprintSelector.GetTagFromSprintName(sprintName);
+		var newTag:Number = Entry.GetTagFromSprintName(sprintName);
 		SprintSelected(newTag);
 	}
 	
@@ -373,14 +515,14 @@ class com.boosprint.Controller extends MovieClip
 	
 	private function GetCurrentSprintName():String
 	{
-		return SprintSelector.GetSprintFromTag(Settings.GetSprintTag(m_settings));
+		return Entry.GetSprintFromTag(Settings.GetSprintTag(m_settings));
 	}
 	
 	private function GetCurrentPetName():String
 	{
 		if (Settings.GetPetEnabled(m_settings) == true)
 		{
-			return SprintSelector.GetPetFromTag(Settings.GetPetTag(m_settings));
+			return Entry.GetPetFromTag(Settings.GetPetTag(m_settings));
 		}
 		else
 		{

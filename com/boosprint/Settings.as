@@ -373,7 +373,7 @@ class com.boosprint.Settings
 	
 	public static function SetSprintInterval(settings:Object, newInterval:Number):Void
 	{
-		if (settings != null && newInterval != null && newInterval >= 1 && newInterval <= 3600)
+		if (settings != null && newInterval != null && isNaN(newInterval) == false && newInterval >= 1 && newInterval <= 3600)
 		{
 			settings[SPRINT_INTERVAL] = newInterval;
 		}

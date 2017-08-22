@@ -1,9 +1,9 @@
-import com.GameInterface.Lore;
-import com.GameInterface.LoreBase;
-import com.GameInterface.LoreNode;
 import com.Utils.Colors;
 import com.boocommon.MenuPanel;
+import com.boosprint.Group;
+import com.boosprint.Entry;
 import mx.utils.Delegate;
+import org.sitedaniel.utils.Proxy;
 /**
  * There is no copyright on this code
  *
@@ -28,15 +28,17 @@ class com.boosprint.SprintSelector
 	private var m_menu:MenuPanel;
 	private var m_sprintCallback:Function;
 	private var m_petCallback:Function;
-	private var m_petsEnabled:Boolean;
+	private var m_groups:Array;
+	private var m_entries:Object;
 	
-	public function SprintSelector(parent:MovieClip, name:String, sprintCallback:Function, petCallback:Function, petsEnabled:Boolean) 
+	public function SprintSelector(parent:MovieClip, name:String, groups:Array, entries:Object, sprintCallback:Function, petCallback:Function) 
 	{
 		m_parent = parent;
 		m_name = name;
 		m_sprintCallback = sprintCallback;
 		m_petCallback = petCallback;
-		m_petsEnabled = petsEnabled;
+		m_groups = groups;
+		m_entries = entries;
 		
 		m_frame = parent.createEmptyMovieClip(name + "Frame", parent.getNextHighestDepth());
 		BuildMenu();
@@ -67,38 +69,26 @@ class com.boosprint.SprintSelector
 	
 	private function BuildMenu():Void
 	{
-		m_menu = new MenuPanel(m_frame, "MountsAndPets", 4);
+		m_menu = new MenuPanel(m_frame, "SprintsAndPets", 4);
+		var singleGroup:Boolean = IsSingleGroup();
 
-		var parentMenu:MenuPanel = m_menu;
-		if (m_petsEnabled == true)
+		for (var indx:Number = 0; indx < m_groups.length; ++indx)
 		{
-			parentMenu = new MenuPanel(m_frame, "Sprint", 4);
-			m_menu.AddSubMenu("Sprint", parentMenu, Colors.e_ColorPassiveSpellHighlight, Colors.e_ColorPassiveSpellBackground);
-		}
-		
-		var nodes:Array = GetSprintData();
-		for (var indx:Number = 0; indx < nodes.length; ++indx)
-		{
-			var thisNode:LoreNode = nodes[indx];
-			if (thisNode != null)
+			var thisGroup:Group = m_groups[indx];
+			if (thisGroup != null && thisGroup.IsHidden() != true)
 			{
-				parentMenu.AddItem(thisNode.m_Name, Delegate.create(this, SprintCallback), Colors.e_ColorPassiveSpellHighlight, Colors.e_ColorPassiveSpellBackground);
-			}
-		}
-		
-		if (m_petsEnabled == true)
-		{
-			var petMenu:MenuPanel = new MenuPanel(m_frame, "Pet", 4);
-			petMenu.AddItem("None", Delegate.create(this, PetCallback), Colors.e_ColorPassiveSpellHighlight, Colors.e_ColorPassiveSpellBackground);
-			m_menu.AddSubMenu("Pet", petMenu, Colors.e_ColorPassiveSpellHighlight, Colors.e_ColorPassiveSpellBackground);
-			
-			var petNodes:Array = GetPetData();
-			for (var indx:Number = 0; indx < petNodes.length; ++indx)
-			{
-				var thisNode:LoreNode = petNodes[indx];
-				if (thisNode != null)
+				var colours:Array = Group.GetColourArray(thisGroup.GetColourName());
+				if (singleGroup == true)
 				{
-					petMenu.AddItem(thisNode.m_Name, Delegate.create(this, PetCallback), Colors.e_ColorPassiveSpellHighlight, Colors.e_ColorPassiveSpellBackground);
+					BuildSingleMenu(thisGroup.GetID(), colours, m_menu);
+				}
+				else
+				{
+					var subMenu:MenuPanel = BuildSubMenu(thisGroup.GetID(), colours);
+					if (subMenu != null)
+					{
+						m_menu.AddSubMenu(thisGroup.GetName(), subMenu, colours[0], colours[1]);
+					}
 				}
 			}
 		}
@@ -106,142 +96,85 @@ class com.boosprint.SprintSelector
 		m_menu.SetVisible(false);
 	}
 	
-	private function SprintCallback(sprintName:String):Void
+	private function BuildSubMenu(groupID:String, colours:Array):MenuPanel
+	{
+		var subMenu:MenuPanel = null;
+		var sortedEntrys:Array = Entry.GetOrderedEntries(groupID, m_entries);
+		
+		if (sortedEntrys.length > 0)
+		{
+			subMenu = new MenuPanel(m_frame, m_name + groupID, 4);
+			for (var indx:Number = 0; indx < sortedEntrys.length; ++indx)
+			{
+				var thisEntry:Entry = sortedEntrys[indx];
+				if (thisEntry != null && thisEntry.GetGroup() == groupID)
+				{
+					subMenu.AddItem(thisEntry.GetName(), Proxy.create(this, EntryCallback, thisEntry.GetTag(), thisEntry.IsSprint()), colours[0], colours[1]);
+				}
+			}
+		}
+		
+		return subMenu;
+	}
+	
+	private function BuildSingleMenu(groupID:String, colours:Array, menu:MenuPanel):Void
+	{
+		var sortedEntrys:Array = Entry.GetOrderedEntries(groupID, m_entries);
+		
+		if (sortedEntrys.length > 0)
+		{
+			for (var indx:Number = 0; indx < sortedEntrys.length; ++indx)
+			{
+				var thisEntry:Entry = sortedEntrys[indx];
+				if (thisEntry != null && thisEntry.GetGroup() == groupID)
+				{
+					menu.AddItem(thisEntry.GetName(), Proxy.create(this, EntryCallback, thisEntry.GetTag(), thisEntry.IsSprint()), colours[0], colours[1]);
+				}
+			}
+		}
+	}
+	
+	private function IsSingleGroup():Boolean
+	{
+		var groups:Object = new Object();
+		for (var indx:String in m_entries)
+		{
+			var thisEntry:Entry = m_entries[indx];
+			groups[thisEntry.GetGroup()] = 1;
+		}
+
+		var groupCount:Number = 0;
+		for (var indx:Number = 0; indx < m_groups.length; ++indx)
+		{
+			var thisGroup:Group = m_groups[indx];
+			if (thisGroup != null && groups[thisGroup.GetID()] != null && thisGroup.IsHidden() != true)
+			{
+				++groupCount;
+			}
+		}
+		
+		return groupCount < 2;
+	}
+	
+	private function EntryCallback(tag:Number, isSprint:Boolean):Void
 	{
 		m_menu.SetVisible(false);
-
-		var tag:Number = GetTagFromSprintName(sprintName);
-		if (tag != null && m_sprintCallback != null)
+		if (tag != null)
 		{
-			m_sprintCallback(tag);
-		}
-	}
-	
-	private function PetCallback(petName:String):Void
-	{
-		m_menu.SetVisible(false);
-
-		var tag:Number = GetTagFromPetName(petName);
-		if (m_petCallback != null)
-		{
-			m_petCallback(tag);
-		}
-	}
-	
-	public static function GetSprintFromTag(sprintTag:Number):String
-	{
-		var ret:String = "None";
-		
-		if (sprintTag != null)
-		{
-			var nodes:Array = GetSprintData();
-			for (var indx:Number = 0; indx < nodes.length; ++indx)
+			if (isSprint == true)
 			{
-				var node:LoreNode = LoreNode(nodes[indx]);
-				if (node != null && node.m_Id == sprintTag)
+				if (m_sprintCallback != null)
 				{
-					ret = node.m_Name;
-					break;
+					m_sprintCallback(tag);
+				}
+			}
+			else
+			{
+				if (m_petCallback != null)
+				{
+					m_petCallback(tag);
 				}
 			}
 		}
-		
-		return ret;
-	}
-	
-	public static function GetTagFromSprintName(sprintName:String):Number
-	{
-		var ret:Number = null;
-		if (sprintName != null)
-		{
-			var nodes:Array = GetSprintData();
-			for (var indx:Number = 0; indx < nodes.length; ++indx)
-			{
-				var node:LoreNode = LoreNode(nodes[indx]);
-				if (node != null && node.m_Name == sprintName)
-				{
-					ret = node.m_Id;
-					break;
-				}
-			}
-		}
-		
-		return ret;
-	}
-	
-	private static function GetSprintData():Array
-	{
-		var allNodes:Array = Lore.GetMountTree().m_Children;
-		allNodes.sortOn("m_Name");
-		var ownedNodes:Array = new Array();
-		for (var i = 0; i < allNodes.length; i++)
-		{
-			//if (Utils.GetGameTweak("HideMount_" + allNodes[i].m_Id) == 0)
-			//{
-				if (!LoreBase.IsLocked(allNodes[i].m_Id))
-				{
-					ownedNodes.push(allNodes[i]);
-				}
-			//}
-		}
-		
-		return ownedNodes;
-	}
-	
-	public static function GetPetFromTag(sprintTag:Number):String
-	{
-		var ret:String = "None";
-		
-		if (sprintTag != null)
-		{
-			var nodes:Array = GetPetData();
-			for (var indx:Number = 0; indx < nodes.length; ++indx)
-			{
-				var node:LoreNode = LoreNode(nodes[indx]);
-				if (node != null && node.m_Id == sprintTag)
-				{
-					ret = node.m_Name;
-					break;
-				}
-			}
-		}
-		
-		return ret;
-	}
-	
-	public static function GetTagFromPetName(sprintName:String):Number
-	{
-		var ret:Number = null;
-		if (sprintName != null)
-		{
-			var nodes:Array = GetPetData();
-			for (var indx:Number = 0; indx < nodes.length; ++indx)
-			{
-				var node:LoreNode = LoreNode(nodes[indx]);
-				if (node != null && node.m_Name == sprintName)
-				{
-					ret = node.m_Id;
-					break;
-				}
-			}
-		}
-		
-		return ret;
-	}
-	
-	private static function GetPetData():Array
-	{
-		var allNodes:Array = Lore.GetPetTree().m_Children;
-		allNodes.sortOn("m_Name");
-		var ownedNodes:Array = new Array();
-		for (var i = 0; i < allNodes.length; i++)
-		{
-			if (!LoreBase.IsLocked(allNodes[i].m_Id))
-			{
-				ownedNodes.push(allNodes[i]);
-			}
-		}
-		
-		return ownedNodes;
-	}
+	}	
 }

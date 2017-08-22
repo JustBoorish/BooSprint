@@ -20,6 +20,7 @@ Change Log
 Version 1.4
 - Fixed selector to show upwards when on bottom of screen
 - Changed key press to toggle autosprint as well as sprint
+- Added abilty to reorder pets and sprints in selector
 
 Version 1.3
 - Fixed crash when player has more than 23 pets
