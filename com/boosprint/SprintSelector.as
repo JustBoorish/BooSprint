@@ -1,12 +1,9 @@
-import com.boosprint.MenuPanel;
-import org.sitedaniel.utils.Proxy;
-import mx.utils.Delegate;
-import com.GameInterface.Game.Character;
 import com.GameInterface.Lore;
 import com.GameInterface.LoreBase;
 import com.GameInterface.LoreNode;
-import com.GameInterface.Utils;
 import com.Utils.Colors;
+import com.boocommon.MenuPanel;
+import mx.utils.Delegate;
 /**
  * There is no copyright on this code
  *
@@ -45,9 +42,13 @@ class com.boosprint.SprintSelector
 		BuildMenu();
 	}
 	
-	public function Show(x:Number, y:Number):Void
+	public function Show(x:Number, bottomY:Number, topY:Number):Void
 	{
-		var pt:Object = m_menu.GetDimensions(x, y, true, 0, 0, Stage.width, Stage.height);
+		var pt:Object = m_menu.GetDimensions(x, bottomY, true, 0, 0, Stage.width, Stage.height);
+		if (pt.maxY > Stage.height)
+		{
+			m_menu.GetDimensions(x, topY - (pt.maxY - pt.y) - 1, true, 0, 0, Stage.width, Stage.height);
+		}
 		m_menu.Rebuild();
 		m_menu.RebuildSubmenus();
 		m_menu.SetVisible(true);

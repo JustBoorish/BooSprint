@@ -1,7 +1,5 @@
-import com.boosprint.DebugWindow;
 import com.Utils.Archive;
-import com.GameInterface.FeatInterface;
-import com.GameInterface.FeatData;
+import com.boocommon.DebugWindow;
 /**
  * ...
  * @author ...
@@ -14,6 +12,7 @@ class com.boosprint.Settings
 	private static var PET_TAG:String = "PET_TAG";
 	private static var PET_ENABLED:String = "PET_ENABLED";
 	private static var OVERRIDE_KEY:String = "OVERRIDE_KEY";
+	private static var SMART_SPRINT:String = "SMART_SPRINT";
 	
 	public static var Separator:String = "|";
 	public static var Enabled:String = "enabled";
@@ -326,6 +325,38 @@ class com.boosprint.Settings
 			else
 			{
 				settings[OVERRIDE_KEY] = 0;
+			}
+		}
+	}
+	
+	public static function GetSmartSprint(settings:Object):Boolean
+	{
+		if (settings != null)
+		{
+			if (settings[SMART_SPRINT] == 1)
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		
+		return false;
+	}
+	
+	public static function SetSmartSprint(settings:Object, newValue:Boolean):Void
+	{
+		if (settings != null)
+		{
+			if (newValue == true)
+			{
+				settings[SMART_SPRINT] = 1;
+			}
+			else
+			{
+				settings[SMART_SPRINT] = 0;
 			}
 		}
 	}

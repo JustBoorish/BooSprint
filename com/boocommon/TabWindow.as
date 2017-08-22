@@ -1,10 +1,13 @@
-import caurina.transitions.Tweener;
-import com.GameInterface.DistributedValue;
+import com.boocommon.IconButton;
+import com.boocommon.ITabPane;
+import com.boocommon.TabStrip;
 import com.Utils.Text;
-import com.boocommon.Checkbox;
-import com.boocommon.Graphics;
-import com.boosprint.Settings;
+import com.GameInterface.DistributedValue;
+import caurina.transitions.Tweener;
+import flash.filters.GlowFilter;
+import flash.geom.Matrix;
 import org.sitedaniel.utils.Proxy;
+import mx.utils.Delegate;
 /**
  * There is no copyright on this code
  *
@@ -21,7 +24,7 @@ import org.sitedaniel.utils.Proxy;
  * 
  * Author: Boorish
  */
-class com.boosprint.ConfigWindow
+class com.boocommon.TabWindow
 {
 	private var m_parent:MovieClip;
 	private var m_frame:MovieClip;
@@ -32,32 +35,44 @@ class com.boosprint.ConfigWindow
 	private var m_titleHeight:Number;
 	private var m_maxHeight:Number;
 	private var m_margin:Number;
+	private var m_tabStrip:TabStrip;
+	private var m_tabs:Array;
+	private var m_firstTime:Boolean;
 	private var m_helpIcon:MovieClip;
-	private var m_settings:Object;
-	private var m_enabledCheck:Checkbox;
-	private var m_keyCheck:Checkbox;
-	private var m_smartCheck:Checkbox;
-	private var m_petCheck:Checkbox;
-	private var m_interval:TextField;
+	private var m_helpURL:String;
 	
-	public function ConfigWindow(parent:MovieClip, title:String, x:Number, y:Number, width:Number, closedCallback:Function, helpIcon:String, settings:Object) 
+	public function TabWindow(parent:MovieClip, title:String, x:Number, y:Number, width:Number, height:Number, closedCallback:Function, helpIcon:String, helpURL:String) 
 	{
 		m_name = title;
 		m_parent = parent;
 		m_closedCallback = closedCallback;
-		m_settings = settings;
-		m_frame = m_parent.createEmptyMovieClip(title + "ConfigWindow", m_parent.getNextHighestDepth());
+		m_helpURL = helpURL;
+		m_frame = m_parent.createEmptyMovieClip(title + "TabWindow", m_parent.getNextHighestDepth());
 		m_frame._visible = false;
 		m_frame._x = x;
 		m_frame._y = y;
 		m_maxWidth = width;
 		m_margin = 6;
 		m_titleHeight = 60;
-		m_maxHeight = (270 - m_titleHeight);
+		m_maxHeight = height + (210 - m_titleHeight);
+		m_tabs = new Array();
+		m_firstTime = true;
 		
-		m_textFormat = Graphics.GetTextFormat();
+		m_textFormat = new TextFormat();
+		m_textFormat.align = "left";
+		m_textFormat.font = "tahoma";
+		m_textFormat.size = 14;
+		m_textFormat.color = 0xFFFFFF;
+		m_textFormat.bold = false;
 		
 		DrawFrame(helpIcon);
+	}
+	
+	public function AddTab(name:String, tab:ITabPane):Void
+	{
+		tab.CreatePane(m_parent, m_frame, name, 14, m_titleHeight + 10, m_maxWidth - 42, m_maxHeight - m_titleHeight - 27);
+		m_tabStrip.AddTab(name);
+		m_tabs.push(tab);
 	}
 	
 	public function Unload():Void
@@ -73,29 +88,23 @@ class com.boosprint.ConfigWindow
 	
 	public function SetVisible(visible:Boolean):Void
 	{
-		if (visible == true)
+		if (visible == true && m_firstTime == true)
 		{
-			m_enabledCheck.SetChecked(Settings.GetSprintEnabled(m_settings));
-			m_interval.text = String(Settings.GetSprintInterval(m_settings));
-			m_keyCheck.SetChecked(Settings.GetOverrideKey(m_settings));
-			m_smartCheck.SetChecked(Settings.GetSmartSprint(m_settings));
-			m_petCheck.SetChecked(Settings.GetPetEnabled(m_settings));
+			m_tabStrip.Rebuild();
+			m_firstTime = false;
+			m_tabs[0].SetVisible(true);
+			for (var indx:Number = 1; indx < m_tabs.length; ++indx)
+			{
+				m_tabs[indx].SetVisible(false);
+			}
 		}
 		
 		m_frame._visible = visible;
 		
-		if (visible != true)
+		if (visible != true && m_closedCallback != null)
 		{
-			Settings.SetSprintEnabled(m_settings, m_enabledCheck.IsChecked());
-			Settings.SetSprintInterval(m_settings, Number(m_interval.text));
-			Settings.SetOverrideKey(m_settings, m_keyCheck.IsChecked());
-			Settings.SetSmartSprint(m_settings, m_smartCheck.IsChecked());
-			Settings.SetPetEnabled(m_settings, m_petCheck.IsChecked());
-			
-			if (m_closedCallback != null)
-			{
-				m_closedCallback();
-			}
+			Save();
+			m_closedCallback();
 		}
 	}
 	
@@ -112,11 +121,71 @@ class com.boosprint.ConfigWindow
 		return pt;
 	}
 	
+	private function Save():Void
+	{
+		for (var i:Number = 0; i < m_tabs.length; ++i)
+		{
+			m_tabs[i].Save();
+		}
+	}
+
+	private function StartDrag():Void
+	{
+		for (var i:Number = 0; i < m_tabs.length; ++i)
+		{
+			m_tabs[i].StartDrag();
+		}
+	}
+	
+	private function StopDrag():Void
+	{
+		for (var i:Number = 0; i < m_tabs.length; ++i)
+		{
+			m_tabs[i].StopDrag();
+		}
+	}
+	
+	private function TabPressed(newTab:Number, oldTab:Number):Void
+	{
+		if (oldTab >= 0 && oldTab < m_tabs.length)
+		{
+			m_tabs[oldTab].Save();
+			m_tabs[oldTab].SetVisible(false);
+		}
+		
+		m_tabs[newTab].SetVisible(true);
+	}
+	
+	private static function DrawCircle(target_mc:MovieClip, radius:Number, fillColor:Number, fillAlpha:Number):Void {
+		var x:Number = radius;
+		var y:Number = radius;
+		with (target_mc) {
+			beginFill(fillColor, fillAlpha); 
+			moveTo(x + radius, y);
+			curveTo(radius + x, Math.tan(Math.PI / 8) * radius + y, Math.sin(Math.PI / 4) * radius + x, Math.sin(Math.PI / 4) * radius + y);
+			curveTo(Math.tan(Math.PI / 8) * radius + x, radius + y, x, radius + y);
+			curveTo(-Math.tan(Math.PI / 8) * radius + x, radius+ y, -Math.sin(Math.PI / 4) * radius + x, Math.sin(Math.PI / 4) * radius + y);
+			curveTo(-radius + x, Math.tan(Math.PI / 8) * radius + y, -radius + x, y);
+			curveTo(-radius + x, -Math.tan(Math.PI / 8) * radius + y, -Math.sin(Math.PI / 4) * radius + x, -Math.sin(Math.PI / 4) * radius + y);
+			curveTo(-Math.tan(Math.PI / 8) * radius + x, -radius + y, x, -radius + y);
+			curveTo(Math.tan(Math.PI / 8) * radius + x, -radius + y, Math.sin(Math.PI / 4) * radius + x, -Math.sin(Math.PI / 4) * radius + y);
+			curveTo(radius + x, -Math.tan(Math.PI / 8) * radius + y, radius + x, y);
+			endFill();
+		}
+	}
+	
 	private function DrawFrame(helpIcon:String):Void
 	{
-		var radius:Number = 8;		
+		var radius:Number = 8;
+		var web20Glow:GlowFilter = new GlowFilter(0xF7A95C, 100, 6, 6, 3, 3, true, false);
+		var web20Filters:Array = [web20Glow];
+		var alphas:Array = [100, 100];
+		var ratios:Array = [0, 245];
+		var matrix:Matrix = new Matrix();
+		
 		var extents:Object = Text.GetTextExtent(m_name, m_textFormat, m_frame);
 		
+		matrix.createGradientBox(m_maxWidth, m_maxHeight, 90 / 180 * Math.PI, 0, 0);
 		var configWindow:MovieClip = m_frame;
 		configWindow.lineStyle(0, 0x000000, 100, true, "none", "square", "round");
 		configWindow.beginFill(0x000000, 60);
@@ -165,17 +234,17 @@ class com.boosprint.ConfigWindow
 		dragWindow.lineTo(0, radius);
 		dragWindow.curveTo(0, 0, radius, 0);
 		dragWindow.endFill();
-		dragWindow.onPress = Proxy.create(this, function() { configWindow.startDrag(); } );
-		dragWindow.onRelease = Proxy.create(this, function() { configWindow.stopDrag(); } );
+		dragWindow.onPress = Proxy.create(this, function() { this.StartDrag(); configWindow.startDrag(); } );
+		dragWindow.onRelease = Proxy.create(this, function() { this.StopDrag(); configWindow.stopDrag(); } );
 		
 		var buttonRadius:Number = 6.5;
 		var buttonBack:MovieClip = configWindow.createEmptyMovieClip(m_name + "ButtonBack", configWindow.getNextHighestDepth());
-		Graphics.DrawFilledCircle(buttonBack, buttonRadius, 0, 0, 0x848484, 100);
+		DrawCircle(buttonBack, buttonRadius, 0x848484, 100);
 		buttonBack._x = m_maxWidth - buttonRadius * 2 - 15;
 		buttonBack._y = titleHeight / 2 - buttonRadius;
 		
 		var buttonHover:MovieClip = buttonBack.createEmptyMovieClip(m_name + "ButtonHover", buttonBack.getNextHighestDepth());
-		Graphics.DrawFilledCircle(buttonHover, buttonRadius, 0, 0, 0xFE2E2E, 80);
+		DrawCircle(buttonHover, buttonRadius, 0xFE2E2E, 80);
 		buttonHover._alpha = 0;
 		
 		buttonBack.onRollOver = Proxy.create(this, function() { buttonHover._alpha = 0; Tweener.addTween(buttonHover, { _alpha:60, time:0.5, transition:"linear" } ); } );
@@ -199,7 +268,7 @@ class com.boosprint.ConfigWindow
 			m_helpIcon._x = buttonBack._x - m_helpIcon._width - 10;
 
 			var helpHover:MovieClip = m_helpIcon.createEmptyMovieClip(m_name + "HelpHover", m_helpIcon.getNextHighestDepth());
-			Graphics.DrawFilledCircle(helpHover, 6 / m_helpIcon._xscale * 100, 0, 0, 0x6bcdf0, 80);
+			DrawCircle(helpHover, 6 / m_helpIcon._xscale * 100, 0x6bcdf0, 80);
 			helpHover._alpha = 0;
 		
 			m_helpIcon.onRollOver = Proxy.create(this, function() { helpHover._alpha = 0; Tweener.addTween(helpHover, { _alpha:60, time:0.5, transition:"linear" } ); } );
@@ -207,54 +276,17 @@ class com.boosprint.ConfigWindow
 			m_helpIcon.onPress = Proxy.create(this, function() { Tweener.removeTweens(helpHover); helpHover._alpha = 0; this.onHelpPress(); } );
 		}
 		
-		var y:Number = titleHeight + 20;
-		var checkSize:Number = 10;
-		var enabledText:String = "Auto sprint enabled";
-		var enabledExtents:Object = Text.GetTextExtent(enabledText, m_textFormat, configWindow);
-		m_enabledCheck = new Checkbox("EnabledCheck", configWindow, 20, y + enabledExtents.height / 2 - checkSize / 2, checkSize, null, true);
-		Graphics.DrawText("EnabledLabel", configWindow, enabledText, m_textFormat, 30 + checkSize, y, enabledExtents.width, enabledExtents.height);
-		
-		y += 10 + enabledExtents.height;
-		var intervalText:String = "Auto sprint interval (seconds)";
-		var intervalExtents:Object = Text.GetTextExtent(intervalText, m_textFormat, configWindow);
-		Graphics.DrawText("IntervalLabel", configWindow, intervalText, m_textFormat, 20, y, intervalExtents.width, intervalExtents.height);
-
-		var intervalValueExtents:Object = Text.GetTextExtent("36000", m_textFormat, configWindow);
-		m_interval = configWindow.createTextField("IntervalText", configWindow.getNextHighestDepth(), 30 + intervalExtents.width, y, intervalValueExtents.width, intervalValueExtents.height);
-		m_interval.type = "input";
-		m_interval.setNewTextFormat(m_textFormat);
-		m_interval.setTextFormat(m_textFormat);
-		m_interval.embedFonts = true;
-		m_interval.selectable = true;
-		m_interval.antiAliasType = "advanced";
-		m_interval.autoSize = false;
-		m_interval.border = true;
-		m_interval.background = true;
-		m_interval.textColor = 0xFFFFFF;
-		m_interval.backgroundColor = 0x2E2E2E;
-		
-		y = 10 + m_interval._y + m_interval._height;
-		var keyText:String = "Override sprint key";
-		var keyExtents:Object = Text.GetTextExtent(keyText, m_textFormat, configWindow);
-		m_keyCheck = new Checkbox("KeyCheck", configWindow, 20, y + keyExtents.height / 2 - checkSize / 2, checkSize, null, true);
-		Graphics.DrawText("KeyLabel", configWindow, keyText, m_textFormat, 30 + checkSize, y, keyExtents.width, keyExtents.height);		
-		
-		y += 10 + keyExtents.height;
-		var smartText:String = "Smart sprint for sprint key";
-		var smartExtents:Object = Text.GetTextExtent(smartText, m_textFormat, configWindow);
-		m_smartCheck = new Checkbox("SmartCheck", configWindow, 20, y + smartExtents.height / 2 - checkSize / 2, checkSize, null, true);
-		Graphics.DrawText("SmartLabel", configWindow, smartText, m_textFormat, 30 + checkSize, y, smartExtents.width, smartExtents.height);		
-		
-		y += 10 + smartExtents.height;
-		var petText:String = "Enable pet handling";
-		var petExtents:Object = Text.GetTextExtent(petText, m_textFormat, configWindow);
-		m_petCheck = new Checkbox("PetCheck", configWindow, 20, y + petExtents.height / 2 - checkSize / 2, checkSize, null, true);
-		Graphics.DrawText("PetLabel", configWindow, petText, m_textFormat, 30 + checkSize, y, petExtents.width, petExtents.height);		
+		m_tabStrip = new TabStrip(configWindow, m_name + "TabStrip", 10, titleHeight + 10, m_maxWidth - 20, m_maxHeight - titleHeight - 20, Delegate.create(this, TabPressed), 0);
 	}
 	
 	private function onHelpPress():Void
 	{
-		var newURL:String = "https://tswact.wordpress.com/boosprint/";
+		var newURL:String = "https://tswact.wordpress.com/boocommon/";
+		if (m_helpURL != null)
+		{
+			newURL = m_helpURL;
+		}
+		
 		DistributedValue.SetDValue("WebBrowserStartURL", newURL);
 		DistributedValue.SetDValue("web_browser", true);
 	}

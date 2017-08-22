@@ -1,4 +1,4 @@
-import com.boosprint.DebugWindow;
+import com.boocommon.DebugWindow;
 import caurina.transitions.Tweener;
 import com.Utils.Text;
 import flash.geom.Matrix;
@@ -18,7 +18,7 @@ import flash.geom.Matrix;
  * 
  * Author: Boorish
  */
-class com.boosprint.Graphics
+class com.boocommon.Graphics
 {
 	private static var m_radius:Number = 4;
 	private static var m_margin:Number = 3;
@@ -49,6 +49,13 @@ class com.boosprint.Graphics
 	{
 		var textFormat:TextFormat = GetTextFormat();
 		textFormat.bold = true;
+		return textFormat;
+	}
+	
+	public static function GetLargeBoldTextFormat():TextFormat
+	{
+		var textFormat:TextFormat = GetBoldTextFormat();
+		textFormat.size = 20;
 		return textFormat;
 	}
 	

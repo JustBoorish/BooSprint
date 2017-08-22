@@ -1,5 +1,5 @@
-import com.boosprint.DebugWindow;
-import com.boosprint.IntervalCounter;
+import com.boocommon.InfoWindow;
+import com.boocommon.IntervalCounter;
 import com.GameInterface.Game.BuffData;
 import com.GameInterface.Game.Character;
 import com.GameInterface.SpellBase;
@@ -20,7 +20,7 @@ import mx.utils.Delegate;
  * 
  * Author: Boorish
  */
-class com.boosprint.MountHelper
+class com.boocommon.MountHelper
 {
 	private static var m_interval:IntervalCounter = null;
 	
@@ -45,6 +45,7 @@ class com.boosprint.MountHelper
 		else
 		{
 			SpellBase.SummonMountFromTag();
+			ClearInterval();
 			if (continueCallback != null)
 			{
 				ClearInterval();
@@ -76,7 +77,7 @@ class com.boosprint.MountHelper
 	{
 		if (isError == true && IsSprinting() == true)
 		{
-			DebugWindow.Log(DebugWindow.Error, "Failed to dismount");
+			InfoWindow.LogError("Failed to dismount");
 		}
 		else
 		{

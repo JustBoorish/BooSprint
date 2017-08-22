@@ -1,4 +1,4 @@
-import com.boosprint.Graphics;
+import com.boocommon.Graphics;
 import com.Utils.Text;
 import com.Utils.Signal;
 import caurina.transitions.Tweener;
@@ -19,7 +19,7 @@ import mx.utils.Delegate;
  * 
  * Author: Boorish
  */
-class com.boosprint.DebugWindow
+class com.boocommon.DebugWindow
 {
 	private static var NAME:String = "boodebug2";
 	
@@ -101,7 +101,6 @@ class com.boosprint.DebugWindow
 		if (logLevel >= m_logLevel)
 		{
 			m_text = GetDate() + "  " + str + "\n" + m_text.substring(0, 10000);
-
 			if (m_debug._visible == true)
 			{
 				m_textArea.text = m_text;

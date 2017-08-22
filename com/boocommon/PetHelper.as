@@ -1,6 +1,4 @@
-import com.boosprint.DebugWindow;
 import com.GameInterface.SpellBase;
-import mx.utils.Delegate;
 /**
  * There is no copyright on this code
  *
@@ -17,7 +15,7 @@ import mx.utils.Delegate;
  * 
  * Author: Boorish
  */
-class com.boosprint.PetHelper
+class com.boocommon.PetHelper
 {
 	public function PetHelper() 
 	{

@@ -1,24 +1,22 @@
 //Imports
-import com.boosprint.BIcon;
-import com.boosprint.ConfigWindow;
-import com.boosprint.Controller;
-import com.boosprint.DebugWindow;
-import com.boosprint.IntervalCounter;
-import com.boosprint.MountHelper;
-import com.boosprint.PetHelper;
-import com.boosprint.PetSelector;
-import com.boosprint.Settings;
-import com.boosprint.SprintSelector;
-import com.GameInterface.Game.Character;
 import com.GameInterface.DistributedValue;
+import com.GameInterface.Game.Character;
 import com.GameInterface.Input;
 import com.Utils.Archive;
 import com.Utils.StringUtils;
+import com.boocommon.DebugWindow;
+import com.boocommon.MountHelper;
+import com.boocommon.PetHelper;
+import com.boosprint.BIcon;
+import com.boosprint.ConfigWindow;
+import com.boosprint.Controller;
+import com.boosprint.Settings;
+import com.boosprint.SprintSelector;
 import mx.utils.Delegate;
 
 class com.boosprint.Controller extends MovieClip
 {
-	private static var VERSION:String = "1.3";
+	private static var VERSION:String = "1.4";
 
 	private static var m_instance:Controller = null;
 	
@@ -161,6 +159,7 @@ class com.boosprint.Controller extends MovieClip
 		Settings.SetPetTag(m_defaults, 0);
 		Settings.SetPetEnabled(m_defaults, true);
 		Settings.SetOverrideKey(m_defaults, true);
+		Settings.SetSmartSprint(m_defaults, true);
 	}
 	
 	private function SaveSettings():Void
@@ -175,6 +174,7 @@ class com.boosprint.Controller extends MovieClip
 		var pt:Object = m_icon.GetCoords();
 		m_settings[BIcon.ICON_X] = pt.x;
 		m_settings[BIcon.ICON_Y] = pt.y;
+
 		Settings.Save(m_settingsPrefix, m_settings, m_defaults);
 	}
 	
@@ -204,11 +204,11 @@ class com.boosprint.Controller extends MovieClip
 			if (_root._xmouse >= icon._x && _root._xmouse <= icon._x + icon._width &&
 				_root._ymouse >= icon._y && _root._ymouse <= icon._y + icon._height)
 			{
-				m_sprintSelectorWindow.Show(icon._x + icon._width / 2, icon._y + icon._height);
+				m_sprintSelectorWindow.Show(icon._x + icon._width / 2, icon._y + icon._height, icon._y);
 			}
 			else
 			{
-				m_sprintSelectorWindow.Show(_root._xmouse + 5, _root._ymouse + 5);
+				m_sprintSelectorWindow.Show(_root._xmouse + 5, _root._ymouse + 5, _root._ymouse - 5);
 			}
 		}
 	}
@@ -403,6 +403,29 @@ class com.boosprint.Controller extends MovieClip
 		Input.RegisterHotkey(_global.Enums.InputCommand.e_InputCommand_Movement_SprintToggle, func, _global.Enums.Hotkey.eHotkeyDown, 0);
 	}
 	
+	private function SmartToggleSprint():Void
+	{
+		if (m_clientCharacter != null)
+		{
+			if (MountHelper.IsSprinting() == true)
+			{
+				MountHelper.Dismount();
+				if (IsSprintEnabled() == true)
+				{
+					ToggleSprintEnabled();
+				}
+			}
+			else
+			{
+				Mount();
+				if (IsSprintEnabled() != true)
+				{
+					ToggleSprintEnabled();
+				}
+			}
+		}
+	}
+	
 	private function ToggleSprint():Void
 	{
 		if (m_clientCharacter != null)
@@ -422,7 +445,14 @@ class com.boosprint.Controller extends MovieClip
 	{
 		if (m_instance != null)
 		{
-			m_instance.ToggleSprint();
+			if (Settings.GetSmartSprint(m_instance.m_settings) == true)
+			{
+				m_instance.SmartToggleSprint();
+			}
+			else
+			{
+				m_instance.ToggleSprint();
+			}
 		}
 	}	
 }
