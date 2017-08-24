@@ -109,7 +109,7 @@ class com.boosprint.OptionsTab implements ITabPane
 		m_petCheck = new Checkbox("PetCheck", m_frame, 20, y + petExtents.height / 2 - checkSize / 2, checkSize, null, true);
 		Graphics.DrawText("PetLabel", m_frame, petText, m_textFormat, 30 + checkSize, y, petExtents.width, petExtents.height);
 		
-		ApplySettings();
+		SetOptions();
 	}
 	
 	public function Save():Void
@@ -131,11 +131,7 @@ class com.boosprint.OptionsTab implements ITabPane
 	{
 		if (visible == true)
 		{
-			m_enabledCheck.SetChecked(Settings.GetSprintEnabled(m_settings));
-			m_interval.text = String(Settings.GetSprintInterval(m_settings));
-			m_keyCheck.SetChecked(Settings.GetOverrideKey(m_settings));
-			m_smartCheck.SetChecked(Settings.GetSmartSprint(m_settings));
-			m_petCheck.SetChecked(Settings.GetPetEnabled(m_settings));
+			SetOptions();
 		}
 		
 		m_frame._visible = visible;
@@ -161,5 +157,14 @@ class com.boosprint.OptionsTab implements ITabPane
 		Settings.SetOverrideKey(m_settings, m_keyCheck.IsChecked());
 		Settings.SetSmartSprint(m_settings, m_smartCheck.IsChecked());
 		Settings.SetPetEnabled(m_settings, m_petCheck.IsChecked());
+	}
+	
+	private function SetOptions():Void
+	{
+		m_enabledCheck.SetChecked(Settings.GetSprintEnabled(m_settings));
+		m_interval.text = String(Settings.GetSprintInterval(m_settings));
+		m_keyCheck.SetChecked(Settings.GetOverrideKey(m_settings));
+		m_smartCheck.SetChecked(Settings.GetSmartSprint(m_settings));
+		m_petCheck.SetChecked(Settings.GetPetEnabled(m_settings));
 	}
 }

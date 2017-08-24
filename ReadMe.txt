@@ -17,6 +17,9 @@ Delete the BooSprint directory from \Data\Gui\Customized\Flash\
 
 Change Log
 
+Version 1.5
+- Fixed bug where options kept resetting to default values
+
 Version 1.4
 - Fixed selector to show upwards when on bottom of screen
 - Changed key press to toggle autosprint as well as sprint
