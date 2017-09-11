@@ -3,8 +3,8 @@ import com.GameInterface.Log;
 import com.GameInterface.Tooltip.TooltipData;
 import com.GameInterface.Tooltip.TooltipInterface;
 import com.GameInterface.Tooltip.TooltipManager;
-import com.boocommon.DebugWindow;
-import com.boocommon.IntervalCounter;
+import com.boosprintcommon.DebugWindow;
+import com.boosprintcommon.IntervalCounter;
 import mx.utils.Delegate;
 
 /**

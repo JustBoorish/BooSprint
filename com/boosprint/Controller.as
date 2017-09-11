@@ -4,10 +4,11 @@ import com.GameInterface.Game.Character;
 import com.GameInterface.Input;
 import com.Utils.Archive;
 import com.Utils.StringUtils;
-import com.boocommon.DebugWindow;
-import com.boocommon.MountHelper;
-import com.boocommon.PetHelper;
-import com.boocommon.TabWindow;
+import com.boosprintcommon.Colours;
+import com.boosprintcommon.DebugWindow;
+import com.boosprintcommon.MountHelper;
+import com.boosprintcommon.PetHelper;
+import com.boosprintcommon.TabWindow;
 import com.boosprint.BIcon;
 import com.boosprint.Entry;
 import com.boosprint.EntryList;
@@ -20,7 +21,7 @@ import mx.utils.Delegate;
 
 class com.boosprint.Controller extends MovieClip
 {
-	private static var VERSION:String = "1.5";
+	private static var VERSION:String = "1.6";
 	private static var MAX_GROUPS:Number = 50;
 	private static var MAX_ENTRIES:Number = 350;
 
@@ -233,8 +234,8 @@ class com.boosprint.Controller extends MovieClip
 		{
 			m_groups = new Array();
 			m_entries = new Object();
-			m_groups.push(new Group(Group.GetNextID(m_groups), "Sprints", Group.GREEN));
-			m_groups.push(new Group(Group.GetNextID(m_groups), "Pets", Group.ORANGE));
+			m_groups.push(new Group(Group.GetNextID(m_groups), "Sprints", Colours.GREEN));
+			m_groups.push(new Group(Group.GetNextID(m_groups), "Pets", Colours.ORANGE));
 			
 			Entry.SetUnkownSprints(m_groups[0].GetID(), m_entries);
 			
@@ -259,7 +260,7 @@ class com.boosprint.Controller extends MovieClip
 			if (newGroup == null)
 			{
 				addNewGroup = true;
-				newGroup = new Group(Group.GetNextID(m_groups), "New", Group.GRAY);
+				newGroup = new Group(Group.GetNextID(m_groups), "New", Colours.GetDefaultColourName());
 			}
 			
 			Entry.SetUnkownSprints(newGroup.GetID(), m_entries);

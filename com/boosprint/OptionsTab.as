@@ -1,9 +1,9 @@
 import caurina.transitions.Tweener;
 import com.GameInterface.DistributedValue;
 import com.Utils.Text;
-import com.boocommon.Checkbox;
-import com.boocommon.Graphics;
-import com.boocommon.ITabPane;
+import com.boosprintcommon.Checkbox;
+import com.boosprintcommon.Graphics;
+import com.boosprintcommon.ITabPane;
 import com.boosprint.Settings;
 import org.sitedaniel.utils.Proxy;
 /**

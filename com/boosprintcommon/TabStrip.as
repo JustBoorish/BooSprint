@@ -1,5 +1,5 @@
-import com.boocommon.DebugWindow;
-import com.boocommon.Graphics;
+import com.boosprintcommon.DebugWindow;
+import com.boosprintcommon.Graphics;
 import org.sitedaniel.utils.Proxy;
 import com.Utils.Text;
 import caurina.transitions.Tweener;
@@ -20,7 +20,7 @@ import flash.geom.Matrix;
  * 
  * Author: Boorish
  */
-class com.boocommon.TabStrip
+class com.boosprintcommon.TabStrip
 {
 	private var m_parent:MovieClip;
 	private var m_name:String;

@@ -2,11 +2,11 @@
 
 Unpack the BooSprint directory into \Data\Gui\Customized\Flash\ located in the root of your The Secret World directory, so it looks like this:
 
-\Data\Gui\Customized\Flash\BooSprint\BooSprint.swf
-\Data\Gui\Customized\Flash\BooSprint\CharPrefs.xml
-\Data\Gui\Customized\Flash\BooSprint\Modules.xml
-\Data\Gui\Customized\Flash\BooSprint\LICENSE.txt
-\Data\Gui\Customized\Flash\BooSprint\ReadMe.txt
+\Data\Gui\Custom\Flash\BooSprint\BooSprint.swf
+\Data\Gui\Custom\Flash\BooSprint\CharPrefs.xml
+\Data\Gui\Custom\Flash\BooSprint\Modules.xml
+\Data\Gui\Custom\Flash\BooSprint\LICENSE.txt
+\Data\Gui\Custom\Flash\BooSprint\ReadMe.txt
 
 PLEASE NOTE: Make sure you restart your client after installing this add-on. Always restart your client when adding XML files as these only get read on load.
 

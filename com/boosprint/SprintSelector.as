@@ -1,5 +1,6 @@
 import com.Utils.Colors;
-import com.boocommon.MenuPanel;
+import com.boosprintcommon.Colours;
+import com.boosprintcommon.MenuPanel;
 import com.boosprint.Group;
 import com.boosprint.Entry;
 import mx.utils.Delegate;
@@ -77,7 +78,7 @@ class com.boosprint.SprintSelector
 			var thisGroup:Group = m_groups[indx];
 			if (thisGroup != null && thisGroup.IsHidden() != true)
 			{
-				var colours:Array = Group.GetColourArray(thisGroup.GetColourName());
+				var colours:Array = Colours.GetColourArray(thisGroup.GetColourName());
 				if (singleGroup == true)
 				{
 					BuildSingleMenu(thisGroup.GetID(), colours, m_menu);

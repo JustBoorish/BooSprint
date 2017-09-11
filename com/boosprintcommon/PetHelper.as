@@ -1,3 +1,4 @@
+import com.GameInterface.SpellBase;
 /**
  * There is no copyright on this code
  *
@@ -14,12 +15,25 @@
  * 
  * Author: Boorish
  */
-interface com.boocommon.ITabPane 
+class com.boosprintcommon.PetHelper
 {
-	public function CreatePane(addonMC:MovieClip, parent:MovieClip, name:String, x:Number, y:Number, width:Number, height:Number):Void;
-	public function SetVisible(visible:Boolean):Void;
-	public function GetVisible():Boolean;
-	public function Save():Void;
-	public function StartDrag():Void;
-	public function StopDrag():Void;
+	public function PetHelper() 
+	{
+	}
+
+	public static function Summon(tag:Number):Void
+	{
+		if (tag > 0)
+		{
+			SpellBase.SummonPetFromTag(tag);
+		}
+	}	
+
+	public static function Dismiss(oldTag:Number):Void
+	{
+		if (oldTag > 0)
+		{
+			SpellBase.SummonPetFromTag(oldTag);
+		}
+	}	
 }

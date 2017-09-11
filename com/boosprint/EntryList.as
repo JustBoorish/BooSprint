@@ -3,14 +3,15 @@ import com.boosprint.Entry;
 import com.boosprint.Group;
 import com.boosprint.ChangeGroupDialog;
 import com.boosprint.EditGroupDialog;
-import com.boocommon.DebugWindow;
-import com.boocommon.ITabPane;
-import com.boocommon.InfoWindow;
-import com.boocommon.OKDialog;
-import com.boocommon.PopupMenu;
-import com.boocommon.ScrollPane;
-import com.boocommon.TreePanel;
-import com.boocommon.YesNoDialog;
+import com.boosprintcommon.Colours;
+import com.boosprintcommon.DebugWindow;
+import com.boosprintcommon.ITabPane;
+import com.boosprintcommon.InfoWindow;
+import com.boosprintcommon.OKDialog;
+import com.boosprintcommon.PopupMenu;
+import com.boosprintcommon.ScrollPane;
+import com.boosprintcommon.TreePanel;
+import com.boosprintcommon.YesNoDialog;
 import mx.utils.Delegate;
 /**
  * There is no copyright on this code
@@ -49,6 +50,8 @@ class com.boosprint.EntryList implements ITabPane
 	private var m_editGroupDialog:EditGroupDialog;
 	private var m_changeGroupDialog:ChangeGroupDialog
 	private var m_forceRedraw:Boolean;
+	private var m_parentWidth:Number;
+	private var m_parentHeight:Number;
 	
 	public function EntryList(name:String, groups:Array, entries:Object, settings:Object, applySprint:Function, applyPet:Function)
 	{
@@ -66,9 +69,11 @@ class com.boosprint.EntryList implements ITabPane
 		m_parent = parent;
 		m_name = name;
 		m_addonMC = addonMC;
-		m_scrollPane = new ScrollPane(m_parent, m_name + "Scroll", x, y, width, height, null);
+		m_parentWidth = parent._width;
+		m_parentHeight = parent._height;
+		m_scrollPane = new ScrollPane(m_parent, m_name + "Scroll", x, y, width, height, null, m_parentHeight * 0.1);
 		
-		m_itemPopup = new PopupMenu(m_addonMC, "Popup", 6);
+		m_itemPopup = new PopupMenu(m_addonMC, "ItemPopup", 6);
 		m_itemPopup.AddItem("Use", Delegate.create(this, ApplyEntry));
 		m_itemPopup.AddSeparator();
 		m_itemPopup.AddItem("Change group", Delegate.create(this, ChangeGroup));
@@ -77,7 +82,7 @@ class com.boosprint.EntryList implements ITabPane
 		m_itemPopup.Rebuild();
 		m_itemPopup.SetCoords(Stage.width / 2, Stage.height / 2);
 		
-		m_groupPopup = new PopupMenu(m_addonMC, "Popup", 6);
+		m_groupPopup = new PopupMenu(m_addonMC, "GroupPopup", 6);
 		m_groupPopup.AddItem("Edit", Delegate.create(this, EditGroup));
 		m_groupPopup.AddSeparator();
 		m_groupPopup.AddItem("Add new group above", Delegate.create(this, AddGroupAbove));
@@ -150,7 +155,7 @@ class com.boosprint.EntryList implements ITabPane
 			if (thisGroup != null)
 			{
 				//DebugWindow.Log(DebugWindow.Info, "Adding group " + thisGroup.GetName());
-				var colours:Array = Group.GetColourArray(thisGroup.GetColourName());
+				var colours:Array = Colours.GetColourArray(thisGroup.GetColourName());
 				var subTree:TreePanel = new TreePanel(m_buildTree.GetMovieClip(), "subTree" + thisGroup.GetName(), margin, colours[0], colours[1], callback, Delegate.create(this, ContextMenu));
 				EntrySubMenu(subTree, thisGroup.GetID());
 				m_buildTree.AddSubMenu(thisGroup.GetName(), thisGroup.GetID(), subTree, colours[0], colours[1]);
@@ -317,7 +322,7 @@ class com.boosprint.EntryList implements ITabPane
 			{
 				UnloadDialogs();
 				
-				m_changeGroupDialog = new ChangeGroupDialog("ChangeGroup", m_parent, m_addonMC, m_currentGroup.GetName(), m_groups);
+				m_changeGroupDialog = new ChangeGroupDialog("ChangeGroup", m_parent, m_addonMC, m_parentWidth, m_parentHeight, m_currentGroup.GetName(), m_groups);
 				m_changeGroupDialog.Show(Delegate.create(this, ChangeGroupCB));
 			}
 		}
@@ -404,13 +409,13 @@ class com.boosprint.EntryList implements ITabPane
 				}
 				else
 				{
-					m_okDialog = new OKDialog("DeleteGroup", m_parent, "You cannot delete a", "group with entries", "");
+					m_okDialog = new OKDialog("DeleteGroup", m_parent, m_parentWidth, m_parentHeight, "You cannot delete a", "group with entries", "");
 					m_okDialog.Show();
 				}
 			}
 			else
 			{
-				m_okDialog = new OKDialog("DeleteGroup", m_parent, "You cannot delete the", "final group", "");
+				m_okDialog = new OKDialog("DeleteGroup", m_parent, m_parentWidth, m_parentHeight, "You cannot delete the", "final group", "");
 				m_okDialog.Show();
 			}
 		}
@@ -438,7 +443,7 @@ class com.boosprint.EntryList implements ITabPane
 		if (m_currentGroup != null)
 		{
 			UnloadDialogs();
-			m_editGroupDialog = new EditGroupDialog("EditGroup", m_parent, m_currentGroup.GetName(), m_currentGroup.GetColourName(), m_currentGroup.IsHidden());
+			m_editGroupDialog = new EditGroupDialog("EditGroup", m_parent, m_parentWidth, m_parentHeight, m_currentGroup.GetName(), m_currentGroup.GetColourName(), m_currentGroup.IsHidden());
 			m_editGroupDialog.Show(Delegate.create(this, EditGroupCB));
 		}
 	}
@@ -484,7 +489,7 @@ class com.boosprint.EntryList implements ITabPane
 		if (m_currentGroup != null)
 		{
 			UnloadDialogs();
-			m_editGroupDialog = new EditGroupDialog("AddGroupAbove", m_parent, "", Group.GRAY);
+			m_editGroupDialog = new EditGroupDialog("AddGroupAbove", m_parent, m_parentWidth, m_parentHeight, "", Colours.GetDefaultColourName());
 			m_editGroupDialog.Show(Delegate.create(this, AddGroupAboveCB));
 		}
 	}
@@ -531,7 +536,7 @@ class com.boosprint.EntryList implements ITabPane
 		if (m_currentGroup != null)
 		{
 			UnloadDialogs();
-			m_editGroupDialog = new EditGroupDialog("AddGroupAbove", m_parent, "", Group.GRAY);
+			m_editGroupDialog = new EditGroupDialog("AddGroupAbove", m_parent, m_parentWidth, m_parentHeight, "", Colours.GetDefaultColourName());
 			m_editGroupDialog.Show(Delegate.create(this, AddGroupBelowCB));
 		}
 	}

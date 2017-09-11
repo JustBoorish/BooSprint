@@ -1,9 +1,10 @@
 import com.Utils.Text;
 import com.boosprint.Group;
-import com.boocommon.Checkbox;
-import com.boocommon.Graphics;
-import com.boocommon.MenuPanel;
-import com.boocommon.ModalBase;
+import com.boosprintcommon.Checkbox;
+import com.boosprintcommon.Colours;
+import com.boosprintcommon.Graphics;
+import com.boosprintcommon.MenuPanel;
+import com.boosprintcommon.ModalBase;
 import mx.utils.Delegate;
 /**
  * There is no copyright on this code
@@ -35,13 +36,13 @@ class com.boosprint.EditGroupDialog
 	private var m_colourY:Number;
 	private var m_hiddenCheck:Checkbox;
 	
-	public function EditGroupDialog(name:String, parent:MovieClip, groupName:String, colourName:String, isHidden:Boolean) 
+	public function EditGroupDialog(name:String, parent:MovieClip, parentWidth:Number, parentHeight:Number, groupName:String, colourName:String, isHidden:Boolean) 
 	{
 		m_groupName = groupName;
 		m_colourName = colourName;
 		m_isHidden = isHidden;
 		
-		m_modalBase = new ModalBase(name, parent, Delegate.create(this, DrawControls), 0.5);
+		m_modalBase = new ModalBase(name, parent, Delegate.create(this, DrawControls), parentWidth * 0.6, parentHeight * 0.6);
 		var modalMC:MovieClip = m_modalBase.GetMovieClip();
 		var x:Number = modalMC._width / 4;
 		var y:Number = modalMC._height - 10;
@@ -110,16 +111,15 @@ class com.boosprint.EditGroupDialog
 	
 	private function BuildMenu(modalMC:MovieClip, x:Number, y:Number):Void
 	{
-		var colours:Array = Group.GetColourArray(m_colourName);
+		var colours:Array = Colours.GetColourArray(m_colourName);
 		m_menu = new MenuPanel(modalMC, "Colour", 4, colours[0], colours[1]);
 		var subMenu:MenuPanel = new MenuPanel(modalMC, "Colour", 4, colours[0], colours[1]);
-		AddItem(subMenu, Group.RED);
-		AddItem(subMenu, Group.GREEN);
-		AddItem(subMenu, Group.BLUE);
-		AddItem(subMenu, Group.ORANGE);
-		AddItem(subMenu, Group.YELLOW);
-		AddItem(subMenu, Group.PURPLE);
-		AddItem(subMenu, Group.GRAY);
+		var colourArray:Array = Colours.GetColourNames();
+		for (var indx:Number = 0; indx < colourArray.length; ++indx)
+		{
+			AddItem(subMenu, colourArray[indx]);
+		}
+
 		m_menu.AddSubMenu("Colour", subMenu, colours[0], colours[1]);
 		
 		var pt:Object = m_menu.GetDimensions(x, y, true, 0, 0, modalMC.width, modalMC.height);
@@ -130,7 +130,7 @@ class com.boosprint.EditGroupDialog
 	
 	private function AddItem(subMenu:MenuPanel, colourName:String):Void
 	{
-		var colours:Array = Group.GetColourArray(colourName);
+		var colours:Array = Colours.GetColourArray(colourName);
 		subMenu.AddItem(colourName, Delegate.create(this, ColourChanged), colours[0], colours[1]);
 	}
 	

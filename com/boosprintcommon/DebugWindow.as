@@ -1,4 +1,4 @@
-import com.boocommon.Graphics;
+import com.boosprintcommon.Graphics;
 import com.Utils.Text;
 import com.Utils.Signal;
 import caurina.transitions.Tweener;
@@ -19,7 +19,7 @@ import mx.utils.Delegate;
  * 
  * Author: Boorish
  */
-class com.boocommon.DebugWindow
+class com.boosprintcommon.DebugWindow
 {
 	private static var NAME:String = "boodebug2";
 	

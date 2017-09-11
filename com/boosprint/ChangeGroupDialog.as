@@ -1,8 +1,9 @@
 import com.Utils.Text;
 import com.boosprint.Group;
-import com.boocommon.ComboBox;
-import com.boocommon.Graphics;
-import com.boocommon.ModalBase;
+import com.boosprintcommon.ComboBox;
+import com.boosprintcommon.Colours;
+import com.boosprintcommon.Graphics;
+import com.boosprintcommon.ModalBase;
 import mx.utils.Delegate;
 /**
  * There is no copyright on this code
@@ -30,12 +31,12 @@ class com.boosprint.ChangeGroupDialog
 	private var m_callback:Function;
 	private var m_combo:ComboBox;
 	
-	public function ChangeGroupDialog(name:String, parent:MovieClip, addonMC:MovieClip, groupName:String, groups:Array) 
+	public function ChangeGroupDialog(name:String, parent:MovieClip, addonMC:MovieClip, parentWidth:Number, parentHeight:Number, groupName:String, groups:Array) 
 	{
 		m_groupName = groupName;
 		m_groups = groups;
 		m_addonMC = addonMC;
-		m_modalBase = new ModalBase(name, parent, Delegate.create(this, DrawControls), 0.5, 0.75);
+		m_modalBase = new ModalBase(name, parent, Delegate.create(this, DrawControls), parentWidth * 0.75, parentHeight * 0.5);
 		var modalMC:MovieClip = m_modalBase.GetMovieClip();
 		var x:Number = modalMC._width / 4;
 		var y:Number = modalMC._height - 10;
@@ -81,7 +82,7 @@ class com.boosprint.ChangeGroupDialog
 			names.push(m_groups[indx].GetName());
 		}
 		
-		var colours:Array = Group.GetColourArray(Group.GRAY);
+		var colours:Array = Colours.GetDefaultColourArray();
 		m_combo = new ComboBox(modalMC, "GroupCombo", m_addonMC, x, y, colours[0], colours[1], 6, m_groupName, names);
 	}
 	
