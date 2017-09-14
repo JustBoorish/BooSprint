@@ -17,6 +17,9 @@ Delete the BooSprint directory from \Data\Gui\Customized\Flash\
 
 Change Log
 
+Version 1.6
+- Changed addon to check for new sprints/pets each time you change zones
+
 Version 1.5
 - Fixed bug where options kept resetting to default values
 

@@ -88,7 +88,7 @@ class com.boosprint.Controller extends MovieClip
 	function OnModuleActivated(config:Archive):Void
 	{
 		Settings.SetArchive(config);
-		DebugWindow.Log("BooSprint OnModuleActivated: " + config.toString());
+		DebugWindow.Log("BooSprint OnModuleActivated"); // + config.toString());
 		
 		m_sprintDV.SignalChanged.Connect(SprintChanged, this);
 		m_petDV.SignalChanged.Connect(PetChanged, this);
@@ -105,6 +105,8 @@ class com.boosprint.Controller extends MovieClip
 			
 			m_icon = new BIcon(m_mc, _root["boosprint\\boosprint"].BooSprintIcon, VERSION, Delegate.create(this, ToggleSprintSelectorVisible), Delegate.create(this, ToggleConfigVisible), Delegate.create(this, ToggleSprintEnabled), Delegate.create(this, ToggleDebugVisible), m_settings[BIcon.ICON_X], m_settings[BIcon.ICON_Y], Delegate.create(this, IsSprintEnabled), Delegate.create(this, GetCurrentSprintName), Delegate.create(this, GetCurrentPetName));
 		}
+		
+		SetUnknownEntries();
 		
 		StartAutoSprint();		
 		OverwriteSprintKey(Settings.GetOverrideKey(m_settings));
@@ -234,8 +236,8 @@ class com.boosprint.Controller extends MovieClip
 		{
 			m_groups = new Array();
 			m_entries = new Object();
-			m_groups.push(new Group(Group.GetNextID(m_groups), "Sprints", Colours.GREEN));
-			m_groups.push(new Group(Group.GetNextID(m_groups), "Pets", Colours.ORANGE));
+			m_groups.push(new Group(Group.GetNextID(m_groups), "Sprints", Colours.GREEN, false));
+			m_groups.push(new Group(Group.GetNextID(m_groups), "Pets", Colours.ORANGE, false));
 			
 			Entry.SetUnkownSprints(m_groups[0].GetID(), m_entries);
 			
@@ -243,35 +245,36 @@ class com.boosprint.Controller extends MovieClip
 			m_entries[noPet.GetTag()] = noPet;
 			Entry.SetUnkownPets(m_groups[1].GetID(), m_entries);
 		}
-		else
+	}
+	
+	private function SetUnknownEntries():Void
+	{
+		var newGroup:Group = null;
+		for (var indx:Number = 0; indx < m_groups.length; ++indx)
 		{
-			var newGroup:Group = null;
-			for (var indx:Number = 0; indx < m_groups.length; ++indx)
+			var thisGroup:Group = m_groups[indx];
+			if (thisGroup != null && thisGroup.GetName() == "New")
 			{
-				var thisGroup:Group = m_groups[indx];
-				if (thisGroup != null && thisGroup.GetName() == "New")
-				{
-					newGroup = thisGroup;
-					break;
-				}
+				newGroup = thisGroup;
+				break;
 			}
-			
-			var addNewGroup:Boolean = false;
-			if (newGroup == null)
+		}
+		
+		var addNewGroup:Boolean = false;
+		if (newGroup == null)
+		{
+			addNewGroup = true;
+			newGroup = new Group(Group.GetNextID(m_groups), "New", Colours.GetDefaultColourName(), false);
+		}
+		
+		Entry.SetUnkownSprints(newGroup.GetID(), m_entries);
+		Entry.SetUnkownPets(newGroup.GetID(), m_entries);
+		
+		if (addNewGroup == true)
+		{
+			if (Entry.IsGroupEmpty(newGroup.GetID(), m_entries) != true)
 			{
-				addNewGroup = true;
-				newGroup = new Group(Group.GetNextID(m_groups), "New", Colours.GetDefaultColourName());
-			}
-			
-			Entry.SetUnkownSprints(newGroup.GetID(), m_entries);
-			Entry.SetUnkownPets(newGroup.GetID(), m_entries);
-			
-			if (addNewGroup == true)
-			{
-				if (Entry.IsGroupEmpty(newGroup.GetID(), m_entries) != true)
-				{
-					m_groups.push(newGroup);
-				}
+				m_groups.push(newGroup);
 			}
 		}
 	}

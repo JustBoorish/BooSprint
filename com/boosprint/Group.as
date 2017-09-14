@@ -85,7 +85,7 @@ class com.boosprint.Group
 	
 	public function IsHidden():Boolean
 	{
-		return m_hidden;
+		return m_hidden == true;
 	}
 	
 	public function SetHidden(isHidden:Boolean):Void
