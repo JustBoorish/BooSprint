@@ -1,5 +1,6 @@
 //Imports
 import com.GameInterface.DistributedValue;
+import com.GameInterface.Game.BuffData;
 import com.GameInterface.Game.Character;
 import com.GameInterface.Input;
 import com.Utils.Archive;
@@ -21,7 +22,7 @@ import mx.utils.Delegate;
 
 class com.boosprint.Controller extends MovieClip
 {
-	private static var VERSION:String = "1.6";
+	private static var VERSION:String = "1.7";
 	private static var MAX_GROUPS:Number = 50;
 	private static var MAX_ENTRIES:Number = 350;
 
@@ -45,6 +46,7 @@ class com.boosprint.Controller extends MovieClip
 	private var m_oldPlayfield:Number;
 	private var m_entryList:EntryList;
 	private var m_optionsTab:OptionsTab;
+	private var m_knownDebuffs:Object;
 	
 	//On Load
 	function onLoad():Void
@@ -60,11 +62,7 @@ class com.boosprint.Controller extends MovieClip
 		{
 			if (m_clientCharacter != null && (m_clientCharacter.GetName() == "Boorish" || m_clientCharacter.GetName() == "Boor" || m_clientCharacter.GetName() == "BoorGirl"))
 			{
-				m_debug = new DebugWindow(m_mc, DebugWindow.Debug);
-			}
-			else
-			{
-				m_debug = new DebugWindow(m_mc, DebugWindow.Info);
+				m_debug = DebugWindow.GetInstance(m_mc, DebugWindow.Debug, "BooSprintDebug");
 			}
 		}
 		DebugWindow.Log(DebugWindow.Info, "BooSprint Loaded");
@@ -77,6 +75,7 @@ class com.boosprint.Controller extends MovieClip
 		m_characterName = null;
 		m_sprintID = -1;
 		m_oldPlayfield = 0;
+		SetKnownDebuffs();
 		SetDefaults();
 		
 		m_sprintDV = DistributedValue.Create("BooSprint_Name");
@@ -88,7 +87,6 @@ class com.boosprint.Controller extends MovieClip
 	function OnModuleActivated(config:Archive):Void
 	{
 		Settings.SetArchive(config);
-		DebugWindow.Log("BooSprint OnModuleActivated"); // + config.toString());
 		
 		m_sprintDV.SignalChanged.Connect(SprintChanged, this);
 		m_petDV.SignalChanged.Connect(PetChanged, this);
@@ -162,6 +160,26 @@ class com.boosprint.Controller extends MovieClip
 		}
 	}
 	
+	private function SetKnownDebuffs():Void
+	{
+		m_knownDebuffs = new Object();
+		m_knownDebuffs[6460735] = 1; // Burning
+		m_knownDebuffs[6542663] = 1; // Filth Exposure
+		m_knownDebuffs[8429030] = 1; // Hellfire		
+		m_knownDebuffs[8537482] = 1; // Filth		
+		m_knownDebuffs[8655424] = 1; // Filth		
+		m_knownDebuffs[6460881] = 1; // Infected		
+		m_knownDebuffs[7853405] = 1; // Nasty Infections		
+		m_knownDebuffs[5576863] = 1; // Bleeding		
+		m_knownDebuffs[7087397] = 1; // Poison		
+		m_knownDebuffs[9008143] = 1; // Insect Swarm		
+		
+		m_knownDebuffs["Accursed"] = 1;
+		m_knownDebuffs["Filth"] = 1;
+		m_knownDebuffs["Acid Rain"] = 1;
+		m_knownDebuffs["Insect Swarm"] = 1;
+	}
+	
 	private function SetDefaults():Void
 	{
 		m_defaults = new Object();
@@ -170,7 +188,7 @@ class com.boosprint.Controller extends MovieClip
 		m_defaults[BIcon.ICON_X] = -1;
 		m_defaults[BIcon.ICON_Y] = -1;
 		Settings.SetSprintTag(m_defaults, 0);
-		Settings.SetSprintInterval(m_defaults, 4);
+		Settings.SetSprintInterval(m_defaults, 2);
 		Settings.SetSprintEnabled(m_defaults, true);
 		Settings.SetPetTag(m_defaults, 0);
 		Settings.SetPetEnabled(m_defaults, true);
@@ -494,7 +512,10 @@ class com.boosprint.Controller extends MovieClip
 				var progress:Number = m_clientCharacter.GetCommandProgress();
 				if (progress == null || progress == 0)
 				{
-					Mount();
+					if (IsKnownDebuffActive() != true)
+					{
+						Mount();
+					}
 				}
 			}
 		}
@@ -600,5 +621,31 @@ class com.boosprint.Controller extends MovieClip
 				m_instance.ToggleSprint();
 			}
 		}
-	}	
+	}
+	
+	private function IsKnownDebuffActive():Boolean
+	{
+		var ret:Boolean = false;
+		if (m_clientCharacter != null && m_clientCharacter.m_BuffList != null)
+		{
+			for (var indx in m_clientCharacter.m_BuffList)
+			{
+				var buffData:BuffData = m_clientCharacter.m_BuffList[indx];
+				if (buffData != null && buffData.m_BuffId != null && m_knownDebuffs[buffData.m_BuffId] == 1)
+				{
+					ret = true;
+					break;
+				}
+				else if (buffData != null && buffData.m_Name != null && m_knownDebuffs[buffData.m_Name] == 1)
+				{
+					DebugWindow.Log(DebugWindow.Debug, "Buff2 " + buffData.m_Name + " ID " + buffData.m_BuffId);
+					ret = true;
+					break;
+				}
+			}
+		}
+		
+		return ret;
+		
+	}
 }

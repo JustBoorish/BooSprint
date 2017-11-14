@@ -17,6 +17,10 @@ Delete the BooSprint directory from \Data\Gui\Customized\Flash\
 
 Change Log
 
+Version 1.7
+- Changed default sprint polling frequency from 4secs to 2secs
+- Stopped attempting to autosprint when you have a damaging debuff affecting your character
+
 Version 1.6
 - Changed addon to check for new sprints/pets each time you change zones
 

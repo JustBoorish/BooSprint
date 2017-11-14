@@ -1,10 +1,10 @@
 import com.Utils.Colors;
 import com.boosprintcommon.Colours;
 import com.boosprintcommon.MenuPanel;
+import com.boosprintcommon.Proxy;
 import com.boosprint.Group;
 import com.boosprint.Entry;
 import mx.utils.Delegate;
-import org.sitedaniel.utils.Proxy;
 /**
  * There is no copyright on this code
  *
