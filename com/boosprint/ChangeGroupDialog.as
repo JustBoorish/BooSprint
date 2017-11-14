@@ -36,7 +36,7 @@ class com.boosprint.ChangeGroupDialog
 		m_groupName = groupName;
 		m_groups = groups;
 		m_addonMC = addonMC;
-		m_modalBase = new ModalBase(name, parent, Delegate.create(this, DrawControls), parentWidth * 0.75, parentHeight * 0.5);
+		m_modalBase = new ModalBase(name, parent, Delegate.create(this, DrawControls), parentWidth, parentHeight, parentWidth * 0.75, parentHeight * 0.5);
 		var modalMC:MovieClip = m_modalBase.GetMovieClip();
 		var x:Number = modalMC._width / 4;
 		var y:Number = modalMC._height - 10;

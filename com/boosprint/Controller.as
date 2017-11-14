@@ -22,7 +22,7 @@ import mx.utils.Delegate;
 
 class com.boosprint.Controller extends MovieClip
 {
-	private static var VERSION:String = "1.7";
+	private static var VERSION:String = "1.7.1";
 	private static var MAX_GROUPS:Number = 50;
 	private static var MAX_ENTRIES:Number = 350;
 
