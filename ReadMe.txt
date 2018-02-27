@@ -17,6 +17,9 @@ Delete the BooSprint directory from \Data\Gui\Customized\Flash\
 
 Change Log
 
+Version 1.7.2
+- Fix bug when too many pets would not fit on the drop down selector
+
 Version 1.7.1
 - Fix formatting issue on edit dialogs
 

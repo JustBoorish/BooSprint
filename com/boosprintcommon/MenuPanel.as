@@ -258,15 +258,6 @@ class com.boosprintcommon.MenuPanel
 		}
 		else
 		{
-			if (x + m_maxWidth > maxX)
-			{
-				m_x = maxX - m_maxWidth;
-			}
-			else
-			{
-				m_x = x;
-			}
-			
 			var entries:Number = m_names.length;
 			if (entries < 3)
 			{
@@ -282,16 +273,25 @@ class com.boosprintcommon.MenuPanel
 				var count:Number = (entries - 2) / 2;
 				m_y = y - (count * m_elementHeight) - (count * m_margin);
 			}
-			
-			if (m_y + m_maxHeight > maxY)
-			{
-				m_y = maxY - m_maxHeight;
-			}
-			
-			if (m_y < minY)
-			{
-				m_y = minY;
-			}
+		}
+		
+		if (x + m_maxWidth > maxX)
+		{
+			m_x = maxX - m_maxWidth;
+		}
+		else
+		{
+			m_x = x;
+		}		
+		
+		if (m_y + m_maxHeight > maxY)
+		{
+			m_y = maxY - m_maxHeight;
+		}
+		
+		if (m_y < minY)
+		{
+			m_y = minY;
 		}
 		
 		m_menu._x = m_x;
